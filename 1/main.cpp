@@ -11,8 +11,7 @@ using std::vector;
 int status;
 char errmsg[BUF_SIZE];
 
-const int N = 5;
-const char nameN[N] = {'0', '1', '2', '3', '4'};
+const int N = 7;
 const int NAME_SIZE = 512;
 char name[NAME_SIZE];
 
@@ -30,7 +29,7 @@ void init(double* C) {
   for (int i = 0; i < (N * N); ++i) C[i] = unif(re);
 }
 
-void setup_LP(CEnv env, Prob lp, double* C) {
+void setup_LP(CEnv env, Prob lp, double* C, vector<std::string>& nameMap) {
   // * ---- ADD VARIABLES ----
 
   vector<vector<int>> xMap;
@@ -48,11 +47,12 @@ void setup_LP(CEnv env, Prob lp, double* C) {
       double lb = 0.0;  // greater than 0
       double ub = N;
       double obj = 0.0;  // not present in obj. function
-      snprintf(name, NAME_SIZE, "x_%c_%c", nameN[i], nameN[j]);
+      snprintf(name, NAME_SIZE, "x_%i_%i", i, j);
       char* xname = static_cast<char*>(name);
       // printf("%c %c %c\n", nameN[i], nameN[j], *xname);
       CHECKED_CPX_CALL(CPXnewcols, env, lp, 1, &obj, &lb, &ub, &xtype, &xname);
 
+      nameMap[x_position] = name;
       xMap[i][j] = x_position++;
     }
 
@@ -65,16 +65,18 @@ void setup_LP(CEnv env, Prob lp, double* C) {
 
   int y_position = y_start;
   for (int i = 0; i < N; ++i)
-    for (int j = 1; j < N; ++j) {
+    for (int j = 0; j < N; ++j) {
+      // NOTE: j = 0 MUST be considered (for y).
       if (i == j) continue;
       char ytype = 'B';
       double lb = 0.0;  // greater than 0
       double ub = 1.0;
-      double obj = C[i * N + j];
-      snprintf(name, NAME_SIZE, "y_%c_%c", nameN[i], nameN[j]);
+      double obj = (j == 0) ? 0 : C[i * N + j];  // TODO: check this.
+      snprintf(name, NAME_SIZE, "y_%i_%i", i, j);
       char* yname = static_cast<char*>(name);
       CHECKED_CPX_CALL(CPXnewcols, env, lp, 1, &obj, &lb, &ub, &ytype, &yname);
 
+      nameMap[y_position] = name;
       yMap[i][j] = y_position++;
     }
 
@@ -113,27 +115,28 @@ void setup_LP(CEnv env, Prob lp, double* C) {
 
   // sum_{j:(i,j) in A, j!= 0} y_ij = 1 forall i
   for (int i = 0; i < N; ++i) {
-    const int sum_size = (i == 0) ? N - 1 : N - 2;
-    int lside[sum_size];
-    double coeff[sum_size];
-    std::fill_n(coeff, sum_size, 1.0);  // All coefficients are 1.0
+    int lside[N - 1];
+    double coeff[N - 1];
+    std::fill_n(coeff, N - 1, 1.0);  // All coefficients are 1.0
     char sense = 'E';
     const double rside = 1.0;
 
     // Populate lside with: sum_{j:(i,j) in A} y_ij
     int idx = 0;
-    for (int j = 1; j < N; ++j) {
+    // NOTE: j from 0
+    for (int j = 0; j < N; ++j) {
       if (i == j) continue;
       lside[idx++] = yMap[i][j];
     }
 
     int matbeg = 0;
-    CHECKED_CPX_CALL(CPXaddrows, env, lp, 0, 1, sum_size, &rside, &sense,
-                     &matbeg, lside, coeff, nullptr, nullptr);
+    CHECKED_CPX_CALL(CPXaddrows, env, lp, 0, 1, N - 1, &rside, &sense, &matbeg,
+                     lside, coeff, nullptr, nullptr);
   }
 
   // sum_{i:(i,j) in A} y_ij = 1 forall j (!= 0)
-  for (int j = 1; j < N; ++j) {
+  // NOTE: j from 0
+  for (int j = 0; j < N; ++j) {
     int lside[N - 1];
     double coeff[N - 1];
     std::fill_n(coeff, N - 1, 1.0);  // All coefficients are 1.0
@@ -179,8 +182,10 @@ int main(int argc, char const* argv[]) {
 
     init(C);
 
+    const int var_n = (N - 1) * (2 * N - 1);
+    vector<std::string> nameMap(var_n);
     // setup LP
-    setup_LP(env, lp, C);
+    setup_LP(env, lp, C, nameMap);
     // optimize
     CHECKED_CPX_CALL(CPXmipopt, env, lp);
 
@@ -189,9 +194,7 @@ int main(int argc, char const* argv[]) {
     CHECKED_CPX_CALL(CPXgetobjval, env, lp, &objval);
     std::cout << "Objval: " << objval << std::endl;
     int n = CPXgetnumcols(env, lp);
-    // OLD version: 2 * (N * (N-1)) = 2(N^2 - N)
-    // 2 * ((N-1) * (N-2) + (N-1)) = 2 * (N-1)^2
-    if (n != 2 * (N - 1) * (N - 1)) {
+    if (n != var_n) {
       throw std::runtime_error(std::string(__FILE__) + ":" +
                                STRINGIZE(__LINE__) + ": " +
                                "different number of variables");
@@ -200,7 +203,7 @@ int main(int argc, char const* argv[]) {
     varVals.resize(n);
     CHECKED_CPX_CALL(CPXgetx, env, lp, &varVals[0], 0, n - 1);
     for (int i = 0; i < n; ++i) {
-      std::cout << "var in position " << i << " : " << varVals[i] << std::endl;
+      std::cout << nameMap[i] << " : " << varVals[i] << std::endl;
       /// to read variables names the API function ``CPXgetcolname'' may be used
       /// (it is rather tricky, see the API manual if you like...) status =
       /// CPXgetcolname (env, lp, cur_colname, cur_colnamestore, cur_storespace,

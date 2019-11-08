@@ -1,0 +1,139 @@
+
+Log started (V12.8.0.0) Fri Nov  8 15:37:24 2019
+
+File '~/uni/Memoc/projects/1/Lab1TSP.lp' not found.
+No file read.
+
+Problem 'Lab1TSP.lp' read.
+Read time = 0.01 sec. (0.00 ticks)
+
+Problem 'Lab1TSP.lp' read.
+Read time = 0.00 sec. (0.00 ticks)
+Row 'c2' infeasible, all entries at implied bounds.
+Presolve time = 0.00 sec. (0.00 ticks)
+
+Root node processing (before b&c):
+  Real time             =    0.00 sec. (0.01 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.00 sec. (0.01 ticks)
+
+
+MIP - Integer infeasible.
+Current MIP best bound =  0.0000000000e+00 (gap is infinite)
+Solution time =    0.01 sec.  Iterations = 0  Nodes = 0
+Deterministic time = 0.01 ticks  (0.56 ticks/sec)
+
+Found incumbent of value 2.000000 after 0.01 sec. (0.00 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 2 rows and 4 columns.
+Reduced MIP has 9 rows, 22 columns, and 34 nonzeros.
+Reduced MIP has 4 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (0.02 ticks)
+Probing time = 0.00 sec. (0.00 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 9 rows, 22 columns, and 34 nonzeros.
+Reduced MIP has 4 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (0.02 ticks)
+Probing time = 0.00 sec. (0.00 ticks)
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.00 sec. (0.01 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                            2.0000        0.0000           100.00%
+      0     0        1.0000     2        2.0000        1.0000        3   50.00%
+*     0     0      integral     0        1.0000       Cuts: 4        6    0.00%
+      0     0        cutoff              1.0000        1.0000        6    0.00%
+Elapsed time = 0.03 sec. (0.14 ticks, tree = 0.01 MB)
+
+Mixed integer rounding cuts applied:  2
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =    0.02 sec. (0.14 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.02 sec. (0.14 ticks)
+
+Feasopt - Feasible relaxed sum of infeasibilities:  Relaxation =  1.0000000000e+00
+Solution time =    0.03 sec.
+Deterministic time = 0.14 ticks  (5.15 ticks/sec)
+
+
+Problem written to file 'boh.lp'.
+
+Problem 'boh.lp' read.
+Read time = 0.00 sec. (0.00 ticks)
+Row 'c2' infeasible, all entries at implied bounds.
+Presolve time = 0.00 sec. (0.00 ticks)
+
+Root node processing (before b&c):
+  Real time             =    0.00 sec. (0.01 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.00 sec. (0.01 ticks)
+
+
+MIP - Integer infeasible.
+Current MIP best bound =  0.0000000000e+00 (gap is infinite)
+Solution time =    0.00 sec.  Iterations = 0  Nodes = 0
+Deterministic time = 0.01 ticks  (5.70 ticks/sec)
+
+
+Log started (V12.8.0.0) Fri Nov  8 15:50:38 2019
+
+
+Problem 'Lab1TSP.lp' read.
+Read time = 0.00 sec. (0.00 ticks)
+Row 'c2' infeasible, all entries at implied bounds.
+Presolve time = 0.00 sec. (0.00 ticks)
+
+Root node processing (before b&c):
+  Real time             =    0.00 sec. (0.01 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.00 sec. (0.01 ticks)
+
+
+MIP - Integer infeasible.
+Current MIP best bound =  0.0000000000e+00 (gap is infinite)
+Solution time =    0.00 sec.  Iterations = 0  Nodes = 0
+Deterministic time = 0.01 ticks  (1.81 ticks/sec)
+
+
+Problem 'Lab1TSP.lp' read.
+Read time = 0.00 sec. (0.00 ticks)
+Infeasibility row 'c3':  0  = 1.
+Presolve time = 0.00 sec. (0.00 ticks)
+
+Root node processing (before b&c):
+  Real time             =    0.00 sec. (0.01 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.00 sec. (0.01 ticks)
+
+
+MIP - Integer infeasible.
+Current MIP best bound =  0.0000000000e+00 (gap is infinite)
+Solution time =    0.00 sec.  Iterations = 0  Nodes = 0
+Deterministic time = 0.01 ticks  (5.52 ticks/sec)
+
