@@ -35,7 +35,7 @@ extern char errmsg[BUF_SIZE];
 
 /* Shortcut for declaring a Cplex Env */
 #define DECL_ENV(name)                                             \
-  Env name = CPXopenCPLEX(&status);                                \
+  name = CPXopenCPLEX(&status);                                    \
   if (status) {                                                    \
     CPXgeterrorstring(NULL, status, errmsg);                       \
     int trailer = std::strlen(errmsg) - 1;                         \
@@ -46,7 +46,7 @@ extern char errmsg[BUF_SIZE];
 
 /* Shortcut for declaring a Cplex Problem */
 #define DECL_PROB(env, name)                                       \
-  Prob name = CPXcreateprob(env, &status, "");                     \
+  name = CPXcreateprob(env, &status, "");                          \
   if (status) {                                                    \
     CPXgeterrorstring(NULL, status, errmsg);                       \
     int trailer = std::strlen(errmsg) - 1;                         \
