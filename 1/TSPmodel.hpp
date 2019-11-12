@@ -1,25 +1,23 @@
 #include <string>
-#include <vector>
-// #include "cpxmacro.hpp"
 
 struct cpxenv;
 struct cpxlp;
-typedef const cpxenv* CEnv;
 typedef cpxenv* Env;
 typedef cpxlp* Prob;
+struct TSPsolution;
 
 struct TSPmodel {
+ public:
   TSPmodel(int, double*);
   ~TSPmodel();
-  void solve();
-  void printSolution();
+  void solve() const;
+  const TSPsolution getSolution() const;
 
  private:
   Env env;
   Prob lp;
-  int n_var;
-  int N;
+  int n_var, N;
   double* C;
-  void setupProblem();
-  void setupLP(CEnv, Prob, double*, std::vector<std::string>&);
+  std::string* nameMap;
+  void setupLP() const;
 };

@@ -8,6 +8,10 @@
 *.obj
 main
 *.vscode
+*.lp
+*.sol
+*.sav
+files/
 
 # Precompiled Headers
 *.gch

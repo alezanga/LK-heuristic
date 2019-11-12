@@ -1,5 +1,9 @@
-#include "TSPmodel.hpp"
+#include <algorithm>
 #include <iostream>
+#include <vector>
+
+#include "TSPmodel.hpp"
+#include "TSPsolution.hpp"
 #include "cpxmacro.hpp"
 
 using std::string;
@@ -20,7 +24,16 @@ char name[NAME_SIZE];
 //                          3.0, 4.0, 3.0, 0.0};
 // clang-format on
 
-TSPmodel::TSPmodel(int N, double* C) : N(N), C(C) { setupProblem(); }
+TSPmodel::TSPmodel(int N, double* C) : N(N), C(C) {
+  n_var = (N - 1) * (2 * N - 1);
+  nameMap = new string[n_var];
+
+  // Declare cplex env vars
+  DECL_ENV(env);
+  DECL_PROB(env, lp);
+
+  setupLP();
+}
 
 TSPmodel::~TSPmodel() {
   delete[] C;
@@ -28,7 +41,7 @@ TSPmodel::~TSPmodel() {
   CPXcloseCPLEX(&env);
 }
 
-void TSPmodel::setupLP(CEnv env, Prob lp, double* C, vector<string>& nameMap) {
+void TSPmodel::setupLP() const {
   // * ---- ADD VARIABLES ----
 
   vector<vector<int>> xMap;
@@ -168,50 +181,28 @@ void TSPmodel::setupLP(CEnv env, Prob lp, double* C, vector<string>& nameMap) {
       CHECKED_CPX_CALL(CPXaddrows, env, lp, 0, 1, 2, &rside, &sense, &matbeg,
                        lside, coeff, nullptr, nullptr);
     }
-  CHECKED_CPX_CALL(CPXwriteprob, env, lp, "Lab1TSP.lp", 0);
-  // CHECKED_CPX_CALL(CPXwriteprob, env, lp, "Lab1TSP.sav", 0);
+  CHECKED_CPX_CALL(CPXwriteprob, env, lp, "files/TSPLab1.lp", nullptr);
 }
 
-void TSPmodel::setupProblem() {
-  DECL_ENV(env);
-  DECL_PROB(env, lp);
-
-  n_var = (N - 1) * (2 * N - 1);
-  vector<string> nameMap(n_var);
-  // setup LP
-  setupLP(env, lp, C, nameMap);
+void TSPmodel::solve() const {
+  // optimize
+  CHECKED_CPX_CALL(CPXmipopt, env, lp);
 }
 
-void TSPmodel::solve() {
-  try {
-    // optimize
-    CHECKED_CPX_CALL(CPXmipopt, env, lp);
-  } catch (std::exception& e) {
-    std::cout << ">>>EXCEPTION: " << e.what() << std::endl;
-  }
-}
-
-void TSPmodel::printSolution() {
+const TSPsolution TSPmodel::getSolution() const {
   // print
   double objval;
   CHECKED_CPX_CALL(CPXgetobjval, env, lp, &objval);
-  std::cout << "Objval: " << objval << std::endl;
   int n = CPXgetnumcols(env, lp);
   if (n != n_var) {
     throw std::runtime_error(std::string(__FILE__) + ":" + STRINGIZE(__LINE__) +
                              ": " + "different number of variables");
   }
-  std::vector<double> varVals;
-  varVals.resize(n);
-  CHECKED_CPX_CALL(CPXgetx, env, lp, &varVals[0], 0, n - 1);
-  for (int i = 0; i < n; ++i) {
-    // std::cout << nameMap[i] << " : " << varVals[i] << std::endl;
-    // to read variables names the API function ``CPXgetcolname'' may be used
-    // (it is rather tricky, see the API manual if you like...) status =
-    // CPXgetcolname (env, lp, cur_colname, cur_colnamestore,  cur_storespace,
-    // &surplus, 0, cur_numcols-1);
-  }
-  CHECKED_CPX_CALL(CPXsolwrite, env, lp, "Lab1TSP.sol");
+  double* varVals = new double[n];
+  CHECKED_CPX_CALL(CPXgetx, env, lp, varVals, 0, n - 1);
+  // CHECKED_CPX_CALL(CPXsolwrite, env, lp, "Lab1TSP.sol");
+
+  return TSPsolution(varVals, nameMap, objval, N);
 }
 
 // int main(int argc, char const* argv[]) {}
