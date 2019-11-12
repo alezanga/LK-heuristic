@@ -8,7 +8,6 @@
 *.obj
 main
 *.vscode
-*.lp
 *.sol
 *.sav
 files/
