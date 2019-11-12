@@ -9,6 +9,7 @@
 main
 *.vscode
 *.sol
+*.lp
 *.sav
 files/
 
