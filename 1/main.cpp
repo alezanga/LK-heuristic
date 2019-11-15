@@ -16,18 +16,9 @@ using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
-/*double* generateCosts(const int N) {
-  double* C = new double[N * N];
-  std::uniform_real_distribution<double> unif(0, 1001);
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::default_random_engine re(seed);
-  for (int i = 0; i < (N * N); ++i) C[i] = unif(re);
-  return C;
-}*/
-
 void testTimes() {
   const int step = 10;
-  int N = 10;
+  int N = 50;
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";

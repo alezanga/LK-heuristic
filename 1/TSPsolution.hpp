@@ -1,3 +1,6 @@
+#ifndef TSP_SOLUTION
+#define TSP_SOLUTION
+
 #include <iostream>
 #include <string>
 
@@ -12,3 +15,5 @@ struct TSPsolution {
   const int N;
   const int asize;
 };
+
+#endif /*TSP_SOLUTION*/

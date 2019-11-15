@@ -1,3 +1,6 @@
+#ifndef TSP_MODEL
+#define TSP_MODEL
+
 #include <string>
 
 struct cpxenv;
@@ -21,3 +24,5 @@ struct TSPmodel {
   std::string* nameMap;
   void setupLP() const;
 };
+
+#endif /*TSP_MODEL*/

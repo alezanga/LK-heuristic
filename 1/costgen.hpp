@@ -1,3 +1,4 @@
+#include <ilcplex/cplex.h>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -14,60 +15,57 @@ struct hash_pair {
   }
 };
 
-/*struct equal_to_pair {
-  template <class T, class U>
-  bool operator()(const pair<T, U>& p1, const pair<T, U>& p2) const {
-    pair<T, U>{a1, b1} = p1;
-    pair<T, U>{a2, b2} = p2;
-    return p1 == p2 || (a1 == b2 && b1 == a2);
-  }
-};*/
-
 double* generateCosts(const int N) {
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine re(seed);
-  /*std::cout << "d1";
-  std::uniform_int_distribution<int> dist(N / 2, 5 * N);
+  std::uniform_int_distribution<int> dist(N / 2, 5 * N);  // TODO: check this.
   const int X = dist(re);
   const int Y = dist(re);
-  std::cout << "d2";
 
+  // TODO: probably can use something more efficient
   unordered_set<pair<int, int>, hash_pair> vertices;
 
   std::uniform_int_distribution<int> genNodeX(0, X);
   std::uniform_int_distribution<int> genNodeY(0, Y);
   unsigned int nsize = static_cast<unsigned int>(N);
   while (vertices.size() < nsize) {
-    std::cout << "d3";
-
     int x = genNodeX(re);
     int y = genNodeY(re);
     vertices.insert({x, y});
   }
 
   double* C = new double[N * N];
+  double* CCopy = C;
+  std::fill_n(C, N * N, CPX_INFBOUND);
 
   // int row = 0;
-  std::cout << "d4";
-
+  // TODO: number of operations
   for (auto i = vertices.cbegin(); i != vertices.cend(); ++i) {
     const pair<int, int> v = *i;
     const int x = v.first;
     const int y = v.second;
     // int col = 0;
     for (auto j = vertices.cbegin(); j != vertices.cend(); ++j) {
-      std::cout << "Hello";
       if (i != j) {
         const int w = j->first;
         const int z = j->second;
-        *C = sqrt(pow(abs(x - w), 2.0) + pow(abs(y - z), 2.0));
+        *CCopy = sqrt(pow(abs(x - w), 2.0) + pow(abs(y - z), 2.0));
       }
-      C++;
+      CCopy++;
+      // col++;
     }
-  }*/
-
-  double* C = new double[N * N];
-  std::uniform_real_distribution<double> unif(0, 1001);
-  for (int i = 0; i < (N * N); ++i) C[i] = unif(re);
+    // row++;
+  }
   return C;
 }
+
+// for (int i = 0; i < N; ++i) {
+//   for (int j = 0; j < N; ++j) {
+//     std::cout << std::fixed << C[i * N + j] << "  ";
+//   }
+//   std::cout << std::endl;
+// }
+
+// double* C = new double[N * N];
+// std::uniform_real_distribution<double> unif(0, 1001);
+// for (int i = 0; i < (N * N); ++i) C[i] = unif(re);
