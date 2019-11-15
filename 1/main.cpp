@@ -9,31 +9,25 @@
 #include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
 #include "VariadicTable.hpp"
+#include "costgen.hpp"
 
 using std::cout;
 using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
-// clang-format off
-// const double C[N * N] = {0.0, 3.0, 2.0, 3.0, 
-//                          2.0, 0.0, 1.0, 1.5,
-//                          2.0, 1.0, 0.0, 2.5, 
-//                          3.0, 4.0, 3.0, 0.0};
-// clang-format on
-
-double* generateCosts(const int N) {
+/*double* generateCosts(const int N) {
   double* C = new double[N * N];
   std::uniform_real_distribution<double> unif(0, 1001);
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine re(seed);
   for (int i = 0; i < (N * N); ++i) C[i] = unif(re);
   return C;
-}
+}*/
 
 void testTimes() {
   const int step = 10;
-  int N = 50;
+  int N = 10;
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
@@ -43,7 +37,7 @@ void testTimes() {
     VariadicTable<int, double> results(
         {"Problem size (N)", "Time to solve (s)"});
     int executions = 0;
-    while (executions < 6) {
+    while (executions < 1) {
       // Create TSP problem with N holes
       TSPmodel mod = TSPmodel(N, generateCosts(N));
       auto start = std::chrono::system_clock::now();
