@@ -15,6 +15,13 @@ using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
+// clang-format off
+// const double C[N * N] = {0.0, 3.0, 2.0, 3.0, 
+//                          2.0, 0.0, 1.0, 1.5,
+//                          2.0, 1.0, 0.0, 2.5, 
+//                          3.0, 4.0, 3.0, 0.0};
+// clang-format on
+
 double* generateCosts(const int N) {
   double* C = new double[N * N];
   std::uniform_real_distribution<double> unif(0, 1001);

@@ -17,13 +17,6 @@ const int N = 4;
 const int NAME_SIZE = 512;
 char name[NAME_SIZE];
 
-// clang-format off
-// const double C[N * N] = {0.0, 3.0, 2.0, 3.0, 
-//                          2.0, 0.0, 1.0, 1.5,
-//                          2.0, 1.0, 0.0, 2.5, 
-//                          3.0, 4.0, 3.0, 0.0};
-// clang-format on
-
 TSPmodel::TSPmodel(int N, double* C) : N(N), C(C) {
   n_var = (N - 1) * (2 * N - 1);
   nameMap = new string[n_var];
