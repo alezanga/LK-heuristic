@@ -33,7 +33,7 @@ double* generateCosts(const int N) {
 
 void testTimes() {
   const int step = 10;
-  int N = 4;
+  int N = 50;
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
@@ -43,13 +43,14 @@ void testTimes() {
     VariadicTable<int, double> results(
         {"Problem size (N)", "Time to solve (s)"});
     int executions = 0;
-    while (executions < 5) {
+    while (executions < 6) {
       // Create TSP problem with N holes
       TSPmodel mod = TSPmodel(N, generateCosts(N));
       auto start = std::chrono::system_clock::now();
       mod.solve();
       auto end = std::chrono::system_clock::now();
-      double elapsed_seconds = (end - start).count();
+      double elapsed_seconds =
+          std::chrono::duration<double>(end - start).count();
       const TSPsolution sol = mod.getSolution();
       file << sol;
       results.addRow({N, elapsed_seconds});

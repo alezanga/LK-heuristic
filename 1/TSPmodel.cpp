@@ -76,7 +76,10 @@ void TSPmodel::setupLP() const {
       char ytype = 'B';
       double lb = 0.0;  // greater than 0
       double ub = 1.0;
-      double obj = (j == 0) ? 0 : C[i * N + j];  // TODO: check this.
+      // double obj = (j == 0) ? 0 : C[i * N + j]; NO, ERRATO
+      // It's correct to consider all y (including first column) in costs. This
+      // is because we need to consider the last arc.
+      double obj = C[i * N + j];
       snprintf(name, NAME_SIZE, "y_%i_%i", i, j);
       char* yname = static_cast<char*>(name);
       CHECKED_CPX_CALL(CPXnewcols, env, lp, 1, &obj, &lb, &ub, &ytype, &yname);
@@ -84,9 +87,6 @@ void TSPmodel::setupLP() const {
       nameMap[y_position] = name;
       yMap[i][j] = y_position++;
     }
-
-  // const int y_end = CPXgetnumcols(env, lp);
-  // printf("%d", y_end);
 
   // * ---- ADD CONSTRAINTS ----
   // In-flow - out-flow = 1
