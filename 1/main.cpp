@@ -23,6 +23,7 @@ void testTimes() {
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
   std::string logpath = (logd / "solutions.txt").string();
+  const char a = fs::path::preferred_separator;
   std::ofstream file(logpath, std::ofstream::out);
   try {
     VariadicTable<int, double> results(
@@ -30,7 +31,8 @@ void testTimes() {
     int executions = 0;
     while (executions < 1) {
       // Create TSP problem with N holes
-      TSPmodel mod = TSPmodel(N, generateCosts(N));
+      TSPmodel mod =
+          TSPmodel(N, generateCosts(N), fs::path::preferred_separator);
       auto start = std::chrono::system_clock::now();
       mod.solve();
       auto end = std::chrono::system_clock::now();

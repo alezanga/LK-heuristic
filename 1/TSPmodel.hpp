@@ -11,7 +11,7 @@ struct TSPsolution;
 
 struct TSPmodel {
  public:
-  TSPmodel(int, double*);
+  TSPmodel(int, double*, const char = '/');
   ~TSPmodel();
   void solve() const;
   const TSPsolution getSolution() const;
@@ -22,7 +22,7 @@ struct TSPmodel {
   int n_var, N;
   double* C;
   std::string* nameMap;
-  void setupLP() const;
+  void setupLP(const char) const;
 };
 
 #endif /*TSP_MODEL*/

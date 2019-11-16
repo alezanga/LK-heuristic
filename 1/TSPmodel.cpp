@@ -17,7 +17,7 @@ const int N = 4;
 const int NAME_SIZE = 512;
 char name[NAME_SIZE];
 
-TSPmodel::TSPmodel(int N, double* C) : N(N), C(C) {
+TSPmodel::TSPmodel(int N, double* C, const char sep) : N(N), C(C) {
   n_var = (N - 1) * (2 * N - 1);
   nameMap = new string[n_var];
 
@@ -25,7 +25,7 @@ TSPmodel::TSPmodel(int N, double* C) : N(N), C(C) {
   DECL_ENV(env);
   DECL_PROB(env, lp);
 
-  setupLP();
+  setupLP(sep);
 }
 
 TSPmodel::~TSPmodel() {
@@ -34,7 +34,7 @@ TSPmodel::~TSPmodel() {
   CPXcloseCPLEX(&env);
 }
 
-void TSPmodel::setupLP() const {
+void TSPmodel::setupLP(const char sep) const {
   // * ---- ADD VARIABLES ----
 
   vector<vector<int>> xMap;
@@ -174,7 +174,8 @@ void TSPmodel::setupLP() const {
       CHECKED_CPX_CALL(CPXaddrows, env, lp, 0, 1, 2, &rside, &sense, &matbeg,
                        lside, coeff, nullptr, nullptr);
     }
-  CHECKED_CPX_CALL(CPXwriteprob, env, lp, "files/TSPLab1.lp", nullptr);
+  string filename = string("files") + sep + string("TSPLab1.lp");
+  CHECKED_CPX_CALL(CPXwriteprob, env, lp, filename.c_str(), nullptr);
 }
 
 void TSPmodel::solve() const {
