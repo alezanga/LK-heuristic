@@ -3,28 +3,32 @@
 #include <cmath>
 #include <iostream>
 #include <random>
-#include <unordered_set>
+
+#include "CostGen.hpp"
 
 using std::pair;
 using std::unordered_set;
 
-struct hash_pair {
-  template <class T, class U>
-  std::size_t operator()(const pair<T, U>& p) const {
-    return std::hash<T>()(p.first) ^ std::hash<U>()(p.second);
-  }
-};
+CostGen::CostGen() : X(0), Y(0) {}
 
-double* generateCosts(const int N) {
+void CostGen::adjustSize(const int N) {
+  // PRE = X * Y < N
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine re(seed);
-  std::uniform_int_distribution<int> dist(N / 2, 5 * N);  // TODO: check this.
-  const int X = dist(re);
-  const int Y = dist(re);
+  int min = static_cast<int>(std::ceil(sqrt(N)));
+  std::uniform_int_distribution<int> randomIncrease(min, 3 * N);
+  X += randomIncrease(re);
+  Y += randomIncrease(re);
+}
+
+double* CostGen::generateCosts(const int N) {
+  // Increase grid size if necessary
+  if (X * Y < N) adjustSize(N);
+  // POST: X * Y > N
 
   // TODO: probably can use something more efficient
-  unordered_set<pair<int, int>, hash_pair> vertices;
-
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine re(seed);
   std::uniform_int_distribution<int> genNodeX(0, X);
   std::uniform_int_distribution<int> genNodeY(0, Y);
   unsigned int nsize = static_cast<unsigned int>(N);
@@ -38,23 +42,20 @@ double* generateCosts(const int N) {
   double* CCopy = C;
   std::fill_n(C, N * N, CPX_INFBOUND);
 
-  // int row = 0;
   // TODO: number of operations
   for (auto i = vertices.cbegin(); i != vertices.cend(); ++i) {
     const pair<int, int> v = *i;
-    const int x = v.first;
-    const int y = v.second;
+    const int xi = v.first;
+    const int yi = v.second;
     // int col = 0;
     for (auto j = vertices.cbegin(); j != vertices.cend(); ++j) {
       if (i != j) {
-        const int w = j->first;
-        const int z = j->second;
-        *CCopy = sqrt(pow(abs(x - w), 2.0) + pow(abs(y - z), 2.0));
+        const int xj = j->first;
+        const int yj = j->second;
+        *CCopy = sqrt(pow(abs(xi - xj), 2.0) + pow(abs(yi - yj), 2.0));
       }
       CCopy++;
-      // col++;
     }
-    // row++;
   }
   return C;
 }
