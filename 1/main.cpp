@@ -17,7 +17,7 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 // Global vector with time threshold to visualize when finished
-vector<double> rangeThreshold = {0.1, 1};
+vector<double> rangeThreshold = {0.1, 1, 10, 100};
 
 /**
  * Returns int index corresponding to the range where 'time' belongs
@@ -29,7 +29,7 @@ unsigned int timeRange(double time) {
 }
 
 void testTimes(bool print_console = true) {
-  const int step = 2;
+  const int step = 5;
   int N = 10;
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
@@ -42,11 +42,11 @@ void testTimes(bool print_console = true) {
     VariadicTable<int, double> resultsTable(
         {"Problem size (N)", "Time to solve (s)"});
     VariadicTable<string, string> rangesTable(
-        {"Time threshold (s)", "Problem size (N)"});
+        {"Solving time interval (s)", "Problem size (N)"});
     // Declare a vector to keep track of problem size and time to solve
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
     int executions = 0;
-    while (executions < 20) {
+    while (executions < 10) {
       // Create TSP problem with N holes
       TSPmodel mod =
           TSPmodel(N, gencost.generateCosts(N), fs::path::preferred_separator);
@@ -66,19 +66,24 @@ void testTimes(bool print_console = true) {
     }
 
     // Prepare table with time ranges
-    for (int i = 0; i < rangeThreshold.size(); ++i)
-      rangesTable.addRow(
-          {"<= " + std::to_string(rangeThreshold[i]), rangeSize[i]});  // \u2264
-    rangesTable.addRow(
-        {">  " + std::to_string(rangeThreshold.back()), rangeSize.back()});
+    for (unsigned int i = 0; i < rangeThreshold.size(); ++i) {
+      string doubleString = std::to_string(rangeThreshold[i]);
+      string col1 = doubleString.substr(0, doubleString.find(".") + 2);
+      rangesTable.addRow({"<= " + col1, rangeSize[i]});  // \u2264
+    }
+    string lastString = std::to_string(rangeThreshold.back());
+    string col1 = lastString.substr(0, lastString.find(".") + 2);
+    rangesTable.addRow({">  " + col1, rangeSize.back()});
 
-    // Print to file/console
-    fileres << "Summary of results:\n";
+    // Print to file
+    fileres << "--- SUMMARY OF RESULTS ---\n\n";
+    fileres << "Execution times:\n";
     resultsTable.print(fileres);
+    fileres << "\nDistribution of problems in each time range:\n";
     rangesTable.print(fileres);
     // Print to console
     if (print_console) {
-      cout << "Summary of results:\n";
+      cout << "\n--- SUMMARY OF RESULTS ---\n";
       resultsTable.print(cout);
       rangesTable.print(cout);
     }
