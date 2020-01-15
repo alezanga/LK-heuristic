@@ -12,6 +12,9 @@ main
 *.lp
 *.sav
 files/
+build/
+bin/
+instances/
 
 # Precompiled Headers
 *.gch

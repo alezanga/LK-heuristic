@@ -29,7 +29,6 @@ TSPmodel::TSPmodel(int N, double* C, const char sep) : N(N), C(C) {
 }
 
 TSPmodel::~TSPmodel() {
-  delete[] C;
   CPXfreeprob(env, &lp);
   CPXcloseCPLEX(&env);
 }
@@ -196,7 +195,7 @@ const TSPsolution TSPmodel::getSolution() const {
   CHECKED_CPX_CALL(CPXgetx, env, lp, varVals, 0, n - 1);
   // CHECKED_CPX_CALL(CPXsolwrite, env, lp, "Lab1TSP.sol");
 
-  return TSPsolution(varVals, nameMap, objval, N);
+  return TSPsolution(objval, N, varVals, nameMap);
 }
 
 // int main(int argc, char const* argv[]) {}

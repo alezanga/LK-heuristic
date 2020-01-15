@@ -6,7 +6,8 @@
 
 struct TSPsolution {
   friend std::ostream& operator<<(std::ostream&, const TSPsolution&);
-  TSPsolution(const double*, const std::string*, const double, const int);
+  TSPsolution(const double, const int, const double* = nullptr,
+              const std::string* = nullptr, const std::string& = "");
   ~TSPsolution();
 
   const double* varVals;
@@ -14,6 +15,7 @@ struct TSPsolution {
   const double objVal;
   const int N;
   const int asize;
+  const std::string stour;
 };
 
 #endif /*TSP_SOLUTION*/

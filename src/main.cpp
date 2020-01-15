@@ -7,11 +7,14 @@
 #include <vector>
 
 #include "CostGen.hpp"
+#include "LK.hpp"
 #include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
+#include "Tour.hpp"
 #include "VariadicTable.hpp"
 
 using std::cout;
+using std::pair;
 using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
@@ -28,15 +31,19 @@ unsigned int timeRange(double time) {
   return x;
 }
 
-void testTimes(bool print_console = true) {
-  const int step = 5;
-  int N = 10;
+void testTimes(const bool print_console, const bool load_csv, unsigned int N,
+               const unsigned int N_incr, const int max_iter) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
   std::ofstream filesol((logd / "solutions.txt").string(), std::ofstream::out);
   std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
+
   CostGen gencost;
+
+  fs::create_directory("instances");
+  fs::path insd = fs::current_path() / "instances";
+
   try {
     // Declare tables to hold results
     VariadicTable<int, double> resultsTable(
@@ -45,24 +52,49 @@ void testTimes(bool print_console = true) {
         {"Solving time interval (s)", "Problem size (N)"});
     // Declare a vector to keep track of problem size and time to solve
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
-    int executions = 0;
-    while (executions < 10) {
-      // Create TSP problem with N holes
-      TSPmodel mod =
-          TSPmodel(N, gencost.generateCosts(N), fs::path::preferred_separator);
+    fs::directory_iterator dit = fs::directory_iterator(insd);
+    for (int e = 0; e < max_iter && (!load_csv || dit != fs::end(dit)); ++e) {
+      // Create/load cost matrix
+      double* costs = nullptr;
+      if (load_csv) {
+        pair<unsigned int, double*> instance =
+            gencost.loadFromCsv(dit->path().string());
+        N = instance.first;
+        costs = instance.second;
+      } else {
+        costs = gencost.generateCosts(N);
+      }
+
+      // LK model
+      LK lk(N, costs, LK::initializeTour(N, costs));
       // Solve problem and measure time
       auto start = std::chrono::system_clock::now();
-      mod.solve();
+      lk.solve();
       auto end = std::chrono::system_clock::now();
       double elapsed_seconds =
           std::chrono::duration<double>(end - start).count();
+      cout << "Solved in " << elapsed_seconds << "\n";
+      cout << lk.getSolution();
+
+      // Create CPLEX TSP problem with N holes
+      TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
+      // Solve problem and measure time
+      start = std::chrono::system_clock::now();
+      mod.solve();
+      end = std::chrono::system_clock::now();
+      elapsed_seconds = std::chrono::duration<double>(end - start).count();
       // Log solution to file and add element to display tables
       filesol << mod.getSolution();
       resultsTable.addRow({N, elapsed_seconds});
       rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
+
       // Increment
-      N += step;
-      executions++;
+      if (load_csv)
+        ++dit;
+      else
+        N += N_incr;
+      // Delete costs matrix
+      delete[] costs;
     }
 
     // Prepare table with time ranges
@@ -95,6 +127,13 @@ void testTimes(bool print_console = true) {
 }
 
 int main() {
-  testTimes();
+  // TODO: add description
+  const bool load_csv_instances = false;
+  const unsigned int N_init = 10;
+  const unsigned int N_incr = 5;
+  const int max_iter = 10;
+  const bool print_console = true;
+
+  testTimes(print_console, load_csv_instances, N_init, N_incr, max_iter);
   return 0;
 }

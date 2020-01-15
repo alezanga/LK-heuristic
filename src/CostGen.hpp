@@ -11,13 +11,15 @@ struct hash_pair {
 };
 
 class CostGen {
-  int X, Y;
-  std::unordered_set<std::pair<int, int>, hash_pair> vertices;
-  void adjustSize(const int);
+  unsigned int X, Y;
+  std::unordered_set<std::pair<unsigned int, unsigned int>, hash_pair> vertices;
+  void adjustSize(const unsigned int);
 
  public:
   CostGen();
-  double* generateCosts(const int);
+  double* generateCosts(const unsigned int);
+  void saveToCsv(double*, unsigned int N, const std::string&);
+  std::pair<unsigned int, double*> loadFromCsv(const std::string&);
 };
 
 #endif /*COST_GEN*/

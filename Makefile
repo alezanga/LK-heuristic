@@ -1,5 +1,5 @@
 CC = g++-7
-CPPFLAGS = -g -Wall -O2
+CPPFLAGS = -g -Wall -O0
 LDFLAGS =
 
 CPX_BASE    = /opt/ibm/ILOG/CPLEX_Studio128
@@ -10,7 +10,7 @@ ODIR = build
 SRCDIR = src
 BIN = bin
 
-OBJ = $(ODIR)/main.o $(ODIR)/TSPmodel.o $(ODIR)/TSPsolution.o $(ODIR)/CostGen.o
+OBJ = $(ODIR)/main.o $(ODIR)/TSPmodel.o $(ODIR)/TSPsolution.o $(ODIR)/CostGen.o $(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/Node.o
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 		$(CC) $(CPPFLAGS) -I$(CPX_INCDIR) -c $^ -o $@
@@ -22,3 +22,5 @@ clean:
 		rm -rf $(OBJ) $(BIN)/main
 
 .PHONY: clean
+
+$(shell mkdir -p $(ODIR) $(SRCDIR))
