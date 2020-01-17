@@ -20,6 +20,7 @@ class LK {
   double* C;
   std::vector<Tour> solutions;
   unsigned int max_neighbours;
+  double G;
 
   std::vector<vertex> neighbourhood(const vertex&, double, const Tour&,
                                     const std::vector<bool>&,
@@ -32,7 +33,7 @@ class LK {
    * @param lasty: last node added to Y (which is t_2i-1)
    */
   bool chooseX(Tour&, const vertex&, const vertex&, double, std::vector<vertex>,
-               std::vector<bool>, std::vector<bool>);
+               std::vector<bool>, std::vector<bool>, const int);
 
   /**
    * Choose one edge to add to the tour, starting from node lastx.
@@ -40,7 +41,7 @@ class LK {
    * @param lastx: last node removed from original tour (added to X)
    */
   bool chooseY(Tour&, const vertex&, const vertex&, double, std::vector<vertex>,
-               std::vector<bool>, std::vector<bool>);
+               std::vector<bool>, std::vector<bool>, const int);
 
   bool improve(Tour&);
 

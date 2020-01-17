@@ -37,7 +37,6 @@ Tour::Tour(unsigned int N, vector<Node> ed, const double* C) : N(N), tour(ed) {
 void Tour::disconnect(vector<Node>& T, const vector<vertex>& L, unsigned int i,
                       vector<int>& visited) {
   if (i == L.size() - 1) return;
-  // TOFIX: questa asserzione fallisce
   assert(T[L[i]].u == L[i + 1] || T[L[i]].v == L[i + 1]);
   // Disconnect from successor, and replace it with predecessor
   if (T[L[i]].u == L[i + 1])

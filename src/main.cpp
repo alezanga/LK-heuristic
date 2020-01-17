@@ -56,6 +56,8 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
     for (int e = 0; e < max_iter && (!load_csv || dit != fs::end(dit)); ++e) {
       // Create/load cost matrix
       double* costs = nullptr;
+      std::chrono::_V2::system_clock::time_point start, end;
+      double elapsed_seconds;
       if (load_csv) {
         pair<unsigned int, double*> instance =
             gencost.loadFromCsv(dit->path().string());
@@ -68,11 +70,10 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
       // LK model
       LK lk(N, costs, LK::initializeTour(N, costs));
       // Solve problem and measure time
-      auto start = std::chrono::system_clock::now();
+      start = std::chrono::system_clock::now();
       lk.solve();
-      auto end = std::chrono::system_clock::now();
-      double elapsed_seconds =
-          std::chrono::duration<double>(end - start).count();
+      end = std::chrono::system_clock::now();
+      elapsed_seconds = std::chrono::duration<double>(end - start).count();
       cout << "Solved in " << elapsed_seconds << "\n";
       cout << lk.getSolution();
 
@@ -128,10 +129,10 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
 
 int main() {
   // TODO: add description
-  const bool load_csv_instances = false;
-  const unsigned int N_init = 10;
+  const bool load_csv_instances = true;
+  const unsigned int N_init = 50;
   const unsigned int N_incr = 5;
-  const int max_iter = 10;
+  const int max_iter = 5;
   const bool print_console = true;
 
   testTimes(print_console, load_csv_instances, N_init, N_incr, max_iter);
