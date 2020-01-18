@@ -22,8 +22,8 @@ class LK {
   unsigned int max_neighbours;
   double G;
 
-  std::vector<vertex> neighbourhood(const vertex&, double, const Tour&,
-                                    const std::vector<bool>&,
+  std::vector<vertex> neighbourhood(const vertex&, const vertex&, double,
+                                    const Tour&, const std::vector<bool>&,
                                     const std::vector<bool>&);
 
   /**

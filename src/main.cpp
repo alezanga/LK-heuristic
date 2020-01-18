@@ -19,6 +19,11 @@ using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
+struct Param {
+  const bool print_console = true, load_csv = false, save_csv = true;
+  const unsigned int N = 50, N_incr = 5, max_iter = 10;
+};
+
 // Global vector with time threshold to visualize when finished
 vector<double> rangeThreshold = {0.1, 1, 10, 100};
 
@@ -31,8 +36,7 @@ unsigned int timeRange(double time) {
   return x;
 }
 
-void testTimes(const bool print_console, const bool load_csv, unsigned int N,
-               const unsigned int N_incr, const int max_iter) {
+void testTimes(const Param& P) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
@@ -43,7 +47,7 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
 
   fs::create_directory("instances");
   fs::path insd = fs::current_path() / "instances";
-
+  unsigned int N = P.N;
   try {
     // Declare tables to hold results
     VariadicTable<int, double> resultsTable(
@@ -53,18 +57,20 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
     // Declare a vector to keep track of problem size and time to solve
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
     fs::directory_iterator dit = fs::directory_iterator(insd);
-    for (int e = 0; e < max_iter && (!load_csv || dit != fs::end(dit)); ++e) {
+    for (int e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
+         ++e) {
       // Create/load cost matrix
       double* costs = nullptr;
       std::chrono::_V2::system_clock::time_point start, end;
       double elapsed_seconds;
-      if (load_csv) {
+      if (P.load_csv) {
         pair<unsigned int, double*> instance =
             gencost.loadFromCsv(dit->path().string());
         N = instance.first;
         costs = instance.second;
       } else {
         costs = gencost.generateCosts(N);
+        if (P.save_csv) gencost.saveToCsv(costs, N, (insd / "tsp_").string());
       }
 
       // LK model
@@ -90,10 +96,10 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
       rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
 
       // Increment
-      if (load_csv)
+      if (P.load_csv)
         ++dit;
       else
-        N += N_incr;
+        N += P.N_incr;
       // Delete costs matrix
       delete[] costs;
     }
@@ -115,7 +121,7 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
     fileres << "\nDistribution of problems in each time range:\n";
     rangesTable.print(fileres);
     // Print to console
-    if (print_console) {
+    if (P.print_console) {
       cout << "\n--- SUMMARY OF RESULTS ---\n";
       resultsTable.print(cout);
       rangesTable.print(cout);
@@ -129,12 +135,7 @@ void testTimes(const bool print_console, const bool load_csv, unsigned int N,
 
 int main() {
   // TODO: add description
-  const bool load_csv_instances = true;
-  const unsigned int N_init = 50;
-  const unsigned int N_incr = 5;
-  const int max_iter = 5;
-  const bool print_console = true;
 
-  testTimes(print_console, load_csv_instances, N_init, N_incr, max_iter);
+  testTimes(Param());
   return 0;
 }

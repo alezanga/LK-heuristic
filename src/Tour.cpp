@@ -32,10 +32,9 @@ Tour::Tour(unsigned int N, vector<Node> ed, const double* C) : N(N), tour(ed) {
  * @param T tour to update
  * @param L list of alternating edges
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
- * @param visited visited[i] contains the number of edges that touch vertex i.
  */
-void Tour::disconnect(vector<Node>& T, const vector<vertex>& L, unsigned int i,
-                      vector<int>& visited) {
+void Tour::disconnect(vector<Node>& T, const vector<vertex>& L,
+                      unsigned int i) {
   if (i == L.size() - 1) return;
   assert(T[L[i]].u == L[i + 1] || T[L[i]].v == L[i + 1]);
   // Disconnect from successor, and replace it with predecessor
@@ -43,12 +42,7 @@ void Tour::disconnect(vector<Node>& T, const vector<vertex>& L, unsigned int i,
     T[L[i]].u = (i > 0) ? L[i - 1] : L[L.size() - 2];
   else
     T[L[i]].v = (i > 0) ? L[i - 1] : L[L.size() - 2];
-  if (i == 0)
-    visited[L[L.size() - 2]]++;  // predecessor of zero is before last one
-  else
-    visited[L[i - 1]]++;
-  visited[L[i + 1]]--;
-  connect(T, L, i + 1, visited);
+  connect(T, L, i + 1);
 }
 
 /**
@@ -57,19 +51,15 @@ void Tour::disconnect(vector<Node>& T, const vector<vertex>& L, unsigned int i,
  * @param T tour to update
  * @param L list of alternating edges
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
- * @param visited visited[i] contains the number of edges that touch vertex i.
  */
-void Tour::connect(vector<Node>& T, const vector<vertex>& L, unsigned int i,
-                   vector<int>& visited) {
+void Tour::connect(vector<Node>& T, const vector<vertex>& L, unsigned int i) {
   assert(T[L[i]].u == L[i - 1] || T[L[i]].v == L[i - 1]);
   // Connect to successor, and remove reference to predecessor
   if (T[L[i]].u == L[i - 1])
     T[L[i]].u = L[i + 1];
   else
     T[L[i]].v = L[i + 1];
-  visited[L[i + 1]]++;
-  visited[L[i - 1]]--;
-  disconnect(T, L, i + 1, visited);
+  disconnect(T, L, i + 1);
 }
 
 /**
@@ -84,18 +74,19 @@ pair<bool, vector<Node>> Tour::generate(const vector<vertex>& L) const {
   // Copy the current tour
   vector<Node> tour_copy(tour);
 
-  vector<int> visited(N, 2);
+  // vector<int> visited(N, 2);
 
   // Start to generate new tour
-  disconnect(tour_copy, L, 0, visited);
+  disconnect(tour_copy, L, 0);
 
-  // TOCHECK: this check to see if it's a tour could be improved (and maybe can
-  // avoid some passage)
+  // TOCHECK: this check to see if it's a tour (and maybe can avoid some
+  // passage)
 
   // Check if it's a tour: all N vertices must be visited exactly 2 times
-  if (tour_copy.size() != N) return {false, vector<Node>()};
-  for (const int& v : visited)
-    if (v != 2) return {false, vector<Node>()};
+  // SHOUlD BE DONE IN SUBSEQUENT CHECK
+  // if (tour_copy.size() != N) return {false, vector<Node>()};
+  // for (const int& v : visited)
+  //   if (v != 2) return {false, vector<Node>()};
 
   std::unordered_set<vertex> encountered;
   vertex n = 0, pred = -1;

@@ -117,7 +117,7 @@ void TSPmodel::setupLP(const char sep) const {
                      &matbeg, lside, coeff, nullptr, nullptr);
   }
 
-  // sum_{j:(i,j) in A, j!= 0} y_ij = 1 forall i
+  // sum_{j:(i,j) in A} y_ij = 1 forall i
   for (int i = 0; i < N; ++i) {
     int lside[N - 1];
     double coeff[N - 1];
@@ -138,7 +138,7 @@ void TSPmodel::setupLP(const char sep) const {
                      lside, coeff, nullptr, nullptr);
   }
 
-  // sum_{i:(i,j) in A} y_ij = 1 forall j (!= 0)
+  // sum_{i:(i,j) in A} y_ij = 1 forall j
   // NOTE: j from 0
   for (int j = 0; j < N; ++j) {
     int lside[N - 1];

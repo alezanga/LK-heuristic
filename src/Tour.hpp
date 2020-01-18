@@ -15,9 +15,9 @@ class Tour {
   double cost;
 
   static void connect(std::vector<Node>&, const std::vector<vertex>&,
-                      unsigned int, std::vector<int>&);
+                      unsigned int);
   static void disconnect(std::vector<Node>&, const std::vector<vertex>&,
-                         unsigned int, std::vector<int>&);
+                         unsigned int);
 
  public:
   // class Iterator {
