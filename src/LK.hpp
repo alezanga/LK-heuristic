@@ -3,16 +3,9 @@
 
 #include <vector>
 
-class Tour;
+struct Tour;
 typedef unsigned int vertex;
 struct TSPsolution;
-
-struct GreaterPair {
-  template <class T, class U>
-  bool operator()(const std::pair<T, U>& a, const std::pair<T, U>& b) const {
-    return a.first > b.first;
-  }
-};
 
 class LK {
  private:

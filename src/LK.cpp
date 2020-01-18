@@ -143,7 +143,10 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
     }
   }
   // Sort by first element (so by potential gain) in descending order
-  std::sort(neighbours.begin(), neighbours.end(), GreaterPair());
+  std::sort(neighbours.begin(), neighbours.end(),
+            [](const pair<double, int>& a, const pair<double, int>& b) {
+              return a.first > b.first;
+            });
   // Remove potential gain from vector and return the number of best neighbour
   // (bounded by max)
   vector<vertex> ord_neighbours;
