@@ -34,16 +34,16 @@ class LK {
    * @param t1: initial node for current k-opt tour
    * @param lasty: last node added to Y (which is t_2i-1)
    */
-  bool chooseX(Tour&, const vertex&, const vertex&, double, std::vector<vertex>,
-               const int);
+  bool chooseX(Tour&, const vertex&, const vertex&, double,
+               std::vector<vertex>&, const int);
 
   /**
    * Choose one edge to add to the tour, starting from node lastx.
    * @param t1: initial node for current k-opt tour
    * @param lastx: last node removed from original tour (added to X)
    */
-  bool chooseY(Tour&, const vertex&, const vertex&, double, std::vector<vertex>,
-               const int);
+  bool chooseY(Tour&, const vertex&, const vertex&, double,
+               std::vector<vertex>&, const int);
 
   bool improve(Tour&);
 

@@ -12,8 +12,6 @@ using std::vector;
 // TODO: intensification. keep track of common edges
 // TODO: 2-opt trials when a solution is found (nonsequential)
 // TODO: random restart
-// TODO: remove X and Y and just do a linear search on L
-// TODO: is it possible to avoid copying L, and just pushing and popping?
 // TODO: put a max K value, or just consider max complexity
 
 LK::LK(unsigned int N, const double* C, const Tour& t, unsigned int max_neigh)
@@ -156,7 +154,8 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
 }
 
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
-                 vector<vertex> L, const int i) {
+                 vector<vertex>& L, const int i) {
+  // TODO: this function could be rewritten better
   vector<vertex> around_lasty = tour.around(lasty);
   // For each of the two neighbours of lasty
   for (const vertex& t2i : around_lasty) {
@@ -207,12 +206,13 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
             L.pop_back();
             // Replace it with alt_t2i
             L.push_back(alt_t2i);
-            return chooseY(tour, t1, alt_t2i, alt_gi, L, i);
+            if (chooseY(tour, t1, alt_t2i, alt_gi, L, i)) return true;
           }
         }
         // No improvement over previous gain G (relink_gain <= G) & trying other
         // neighbour didn't succeed, or was not possible (i > 2), then terminate
         // choice of x_i and exit loop
+        L.pop_back();  // Remove t2i or alt_t2i
         break;
       }
       // If tour is not valid try the other neighbour
@@ -225,7 +225,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
 }
 
 bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
-                 vector<vertex> L, const int i) {
+                 vector<vertex>& L, const int i) {
   vector<vertex> neighbours_ordered = neighbourhood(t1, lastx, gain, tour, L);
 
   for (const vertex& t_odd : neighbours_ordered) {
