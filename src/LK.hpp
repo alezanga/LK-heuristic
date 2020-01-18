@@ -17,7 +17,7 @@ struct GreaterPair {
 class LK {
  private:
   unsigned int N;
-  double* C;
+  const double* C;
   std::vector<Tour> solutions;
   unsigned int max_neighbours;
   double G;
@@ -49,7 +49,7 @@ class LK {
 
  public:
   static Tour initializeTour(const unsigned int, const double*);
-  LK(unsigned int, double*, const Tour&, unsigned int = 0);
+  LK(unsigned int, const double*, const Tour&, unsigned int = 0);
   void solve();
   const TSPsolution getSolution() const;
 };

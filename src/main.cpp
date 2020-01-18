@@ -57,7 +57,7 @@ void testTimes(const Param& P) {
     // Declare a vector to keep track of problem size and time to solve
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
     fs::directory_iterator dit = fs::directory_iterator(insd);
-    for (int e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
+    for (uint e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
          ++e) {
       // Create/load cost matrix
       double* costs = nullptr;
@@ -84,16 +84,17 @@ void testTimes(const Param& P) {
       cout << lk.getSolution();
 
       // Create CPLEX TSP problem with N holes
-      TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
-      // Solve problem and measure time
-      start = std::chrono::system_clock::now();
-      mod.solve();
-      end = std::chrono::system_clock::now();
-      elapsed_seconds = std::chrono::duration<double>(end - start).count();
-      // Log solution to file and add element to display tables
-      filesol << mod.getSolution();
-      resultsTable.addRow({N, elapsed_seconds});
-      rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
+      // TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
+      // // Solve problem and measure time
+      // start = std::chrono::system_clock::now();
+      // mod.solve();
+      // end = std::chrono::system_clock::now();
+      // elapsed_seconds = std::chrono::duration<double>(end - start).count();
+      // // Log solution to file and add element to display tables
+      // filesol << mod.getSolution();
+      // resultsTable.addRow({N, elapsed_seconds});
+      // rangeSize[timeRange(elapsed_seconds)] += string(" ") +=
+      // std::to_string(N);
 
       // Increment
       if (P.load_csv)

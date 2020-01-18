@@ -16,12 +16,13 @@ using std::vector;
 // TODO: is it possible to avoid copying L, and just pushing and popping?
 // TODO: put a max K value, or just consider max complexity
 
-LK::LK(unsigned int N, double* C, const Tour& t, unsigned int max_neigh)
+LK::LK(unsigned int N, const double* C, const Tour& t, unsigned int max_neigh)
     : N(N), C(C), max_neighbours(max_neigh > 0 ? max_neigh : N - 3), G(0.0) {
   solutions.push_back(t);
 }
 
 bool LK::broken(const vector<vertex>& L, const vertex& a, const vertex& b) {
+  // TOCHECK: L.size() - 1 not a problem since size >= 2 when this is called
   for (unsigned int i = 0; i < L.size() - 1; i += 2)
     if (((L[i] == a) && (L[i + 1] == b)) || ((L[i] == b) && (L[i + 1] == a)))
       return true;
@@ -63,9 +64,8 @@ bool LK::improve(Tour& tour) {
       // edges
       vector<vertex> neighbours = neighbourhood(t1, t2, g0, tour, L);
 
+      // Try all edges (t2, t3) = y1
       for (const vertex& t3 : neighbours) {
-        // Make a copy of L in order to try all edges (t2, t3) = y1
-        vector<vertex> L_copy(L);
         // Gain by adding edge (t2, t3)
         double gi = g0 - C[t2 * N + t3];
         // NOTE: t3 can't be the successor or predecessor of t2 in the tour
@@ -73,17 +73,18 @@ bool LK::improve(Tour& tour) {
         // if added
 
         // Add edge (t2, t3)
-        L_copy.push_back(t3);
+        L.push_back(t3);
 
-        if (chooseX(tour, t1, t3, gi, L_copy, 2))
+        if (chooseX(tour, t1, t3, gi, L, 2))
           // Stop improving and restart again
           return true;
         // else no tour could be closed, try other neighbours
+        L.pop_back();  // remove t3
       }
       // Finished all neighbours, no move improved the current tour. So start
       // by removing a different edge.
     }
-    // The two edges didn't improve solution. Start from a different vertex.
+    // The edge (t1, t2) didn't improve solution. Start from a different vertex.
   }
   // No improving solutions
   return false;
@@ -166,20 +167,21 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
       // TOCHECK: removed !Y[lasty * N + t2i]. A tour edge cannot have been
       // joined
 
-      vector<vertex> L_copy(L);
       // Remove edge (lasty, t2i)
-      L_copy.push_back(t2i);
-
-      vector<vertex> L_relink(L_copy);
+      L.push_back(t2i);
 
       // Relink to t1 adding edge (t2i, t1)
-      L_relink.push_back(t1);
+      L.push_back(t1);
 
       // Gain by relinking (adding edge (t2i, t1))
       double relink_gain = gi - C[t2i * N + t1];
 
       // Check to see if L_relink forms a valid tour
-      pair<bool, vector<Node>> is_tour = tour.generate(L_relink);
+      pair<bool, vector<Node>> is_tour = tour.generate(L);
+
+      // Remove edge (t2i, t1), since we want to continue improving, if possible
+      L.pop_back();
+
       // If L_relink is a valid tour
       if (is_tour.first) {
         // If gain is better found so far
@@ -187,37 +189,38 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
           // Save best improvement so far
           G = relink_gain;
           // Go on improving
-          if (!chooseY(tour, t1, t2i, gi, L_copy, i))
+          if (!chooseY(tour, t1, t2i, gi, L, i))
             // Save new tour with relink
             tour.update(is_tour.second, relink_gain);
           // Improvement found, restart
           return true;
-        } else {
-          // No improvement over previous gain G (relink_gain <= G)
-          // If i <= 2 try other neighbour, even if it is not a feasible tour
-          // TODO: improve this part if possible
-          if (i <= 2) {
-            vertex alt_t2i =
-                (t2i == around_lasty[0]) ? around_lasty[1] : around_lasty[0];
-            double alt_gi = gain + C[lasty * N + alt_t2i];
-            if (alt_t2i != t1 && !broken(L, lasty, alt_t2i)) {
-              vector<vertex> L_copy(L);
-              L_copy.push_back(alt_t2i);
-              return chooseY(tour, t1, alt_t2i, alt_gi, L_copy, i);
-            }
+        } else if (i <= 2) {
+          // Limited backtracking if i == 2
+          // Try to see if it is possible to ge a gainful tour later
+          if (chooseY(tour, t1, t2i, gi, L, i)) return true;
+          // If not, try the other node, which cannot relink with t1
+          vertex alt_t2i =
+              (t2i == around_lasty[0]) ? around_lasty[1] : around_lasty[0];
+          double alt_gi = gain + C[lasty * N + alt_t2i];
+          if (alt_t2i != t1 && !broken(L, lasty, alt_t2i)) {
+            // Remove t2i
+            L.pop_back();
+            // Replace it with alt_t2i
+            L.push_back(alt_t2i);
+            return chooseY(tour, t1, alt_t2i, alt_gi, L, i);
           }
-          // Else no improvement found, terminate choice of x_i
-          return false;
         }
+        // No improvement over previous gain G (relink_gain <= G) & trying other
+        // neighbour didn't succeed, or was not possible (i > 2), then terminate
+        // choice of x_i and exit loop
+        break;
       }
       // If tour is not valid try the other neighbour
+      L.pop_back();  // remove t2i
     }
     // else try the other neighbour of lasty
   }
-  // No edge can be removed (either they are already removed or t1 is one of
-  // the successor). Seach other starting edge
-  // TOCHECK: what to do if I can't generate an x_i starting from lasty.
-  // Shouldn't happen actually
+  // No edge can be removed. Search other starting edge
   return false;
 }
 
@@ -226,20 +229,16 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
   vector<vertex> neighbours_ordered = neighbourhood(t1, lastx, gain, tour, L);
 
   for (const vertex& t_odd : neighbours_ordered) {
-    // Make a copy, since all trials for t_odd are independent
-    vector<vertex> L_copy(L);
-
     // Add edge (lastx, t_odd)
-    L_copy.push_back(t_odd);
+    L.push_back(t_odd);
 
     // Gain from adding (lastx, t_odd)
     double gc = gain - C[lastx * N + t_odd];
 
     // Stop at first improving tour
-    if (chooseX(tour, t1, t_odd, gc, L_copy, i + 1)) return true;
-    // else if (i > 2 || G > 0)      return false;
-    // If no improvement has been found and G == 0 and i > 2 we allow for some
-    // backtracking, that is trying other neighbours
+    if (chooseX(tour, t1, t_odd, gc, L, i + 1)) return true;
+    // else pop t_odd and try other possibilities
+    L.pop_back();
   }
 
   // No improving edge to add starting from lastx
