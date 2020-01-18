@@ -21,6 +21,20 @@ LK::LK(unsigned int N, double* C, const Tour& t, unsigned int max_neigh)
   solutions.push_back(t);
 }
 
+bool LK::broken(const vector<vertex>& L, const vertex& a, const vertex& b) {
+  for (unsigned int i = 0; i < L.size() - 1; i += 2)
+    if (((L[i] == a) && (L[i + 1] == b)) || ((L[i] == b) && (L[i + 1] == a)))
+      return true;
+  return false;
+}
+
+bool LK::joined(const vector<vertex>& L, const vertex& a, const vertex& b) {
+  for (unsigned int i = 1; i < L.size() - 1; i += 2)
+    if (((L[i] == a) && (L[i + 1] == b)) || ((L[i] == b) && (L[i + 1] == a)))
+      return true;
+  return false;
+}
+
 void LK::solve() {
   bool improved = true;
 
@@ -41,17 +55,13 @@ bool LK::improve(Tour& tour) {
   for (vertex t1 = 0; t1 < N; ++t1) {
     vector<vertex> around = tour.around(t1);
     for (const vertex& t2 : around) {
-      // X tells whether edge (a, b) has been removed (if X[a*N+b]==true)
-      vector<bool> X(N * N, false);
       // Start by removing edge (t1, t2) = x1
       vector<vertex> L{t1, t2};
-      X[t1 * N + t2] = X[t2 * N + t1] = true;
       // Gain by removing edge (t1, t2)
       double g0 = C[t1 * N + t2];
       // Find neighbours of t2. Y is empty since there are still no added
       // edges
-      vector<vertex> neighbours =
-          neighbourhood(t1, t2, g0, tour, X, vector<bool>());
+      vector<vertex> neighbours = neighbourhood(t1, t2, g0, tour, L);
 
       for (const vertex& t3 : neighbours) {
         // Make a copy of L in order to try all edges (t2, t3) = y1
@@ -61,14 +71,11 @@ bool LK::improve(Tour& tour) {
         // NOTE: t3 can't be the successor or predecessor of t2 in the tour
         // and neighbours are only the nodes which provide a positive gain
         // if added
-        vector<bool> Y(N * N, false);
 
         // Add edge (t2, t3)
         L_copy.push_back(t3);
-        // Mark it as added
-        Y[t2 * N + t3] = Y[t3 * N + t2] = true;
 
-        if (chooseX(tour, t1, t3, gi, L_copy, X, Y, 2))
+        if (chooseX(tour, t1, t3, gi, L_copy, 2))
           // Stop improving and restart again
           return true;
         // else no tour could be closed, try other neighbours
@@ -94,7 +101,7 @@ bool LK::improve(Tour& tour) {
  */
 vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
                                  double gain, const Tour& tour,
-                                 const vector<bool>& X, const vector<bool>& Y) {
+                                 const vector<vertex>& L) {
   // Possible neighbours are all nodes, excluding itself and the two
   // neighbours in the current tour. Each pair contains the potential gain and
   // the corresponding vertex
@@ -110,13 +117,13 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
     // in X
     vector<vertex> ar_t2i = tour.around(t2i);
     if (n != ar_t2i[0] && n != ar_t2i[1] && n != t2i && n != t1 &&
-        (Y.empty() || !Y[t2i * N + n]) && gi > 0) {
-      // TOCHECK: I removed !X because n is not around t2i so it cannot have
-      // been removed
-      // Consider adding edge yi = (t_2i, t_2i+1) = (t2i, n) Whole
-      // point of this subsequent part is ranking the possible neighbours
-      // (t_2i+1), by seeing the potential gain they could allow by removing the
-      // next edge
+        !joined(L, t2i, n) && gi > 0) {
+      // TOCHECK: I removed !X (!broken) because n is not around t2i so it
+      // cannot have been removed.
+      // Consider adding edge yi = (t_2i, t_2i + 1) =
+      // (t2i, n) Whole point of this subsequent part is ranking the
+      // possible neighbours (t_2i+1), by seeing the potential gain they
+      // could allow by removing the next edge
       vector<vertex> around_n = tour.around(n);
       // NOTE: This set of nodes can't contain t2i, since n was not around t2i
       // For each of the two possible edges to remove
@@ -124,7 +131,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
         // succ_n = t_2i+2, now search for a proper x_i+1
         // If (t_2i+1, t_2i+2) = (n, succ_n) has not been already broken (is in
         // X) and has not been already added (in Y)
-        if (!X[n * N + succ_n]) {
+        if (!broken(L, n, succ_n)) {
           // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
           // Compute potential gain of removing x_i+1 and adding y_i
@@ -148,32 +155,25 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
 }
 
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
-                 vector<vertex> L, vector<bool> X, vector<bool> Y,
-                 const int i) {
+                 vector<vertex> L, const int i) {
   vector<vertex> around_lasty = tour.around(lasty);
   // For each of the two neighbours of lasty
   for (const vertex& t2i : around_lasty) {
     // Consider removing edge (lasty, t2i)
     double gi = gain + C[lasty * N + t2i];
 
-    if (t2i != t1 && !X[lasty * N + t2i]) {
+    if (t2i != t1 && !broken(L, lasty, t2i)) {
       // TOCHECK: removed !Y[lasty * N + t2i]. A tour edge cannot have been
       // joined
 
       vector<vertex> L_copy(L);
-      vector<bool> X_copy(X);
       // Remove edge (lasty, t2i)
       L_copy.push_back(t2i);
-      // Mark it as removed
-      X_copy[lasty * N + t2i] = X_copy[t2i * N + lasty] = true;
 
       vector<vertex> L_relink(L_copy);
-      vector<bool> Y_relink(Y);
 
       // Relink to t1 adding edge (t2i, t1)
       L_relink.push_back(t1);
-      // Mark it as added
-      Y_relink[t2i * N + t1] = Y_relink[t1 * N + t2i] = true;
 
       // Gain by relinking (adding edge (t2i, t1))
       double relink_gain = gi - C[t2i * N + t1];
@@ -187,7 +187,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
           // Save best improvement so far
           G = relink_gain;
           // Go on improving
-          if (!chooseY(tour, t1, t2i, gi, L_copy, X_copy, Y, i))
+          if (!chooseY(tour, t1, t2i, gi, L_copy, i))
             // Save new tour with relink
             tour.update(is_tour.second, relink_gain);
           // Improvement found, restart
@@ -200,12 +200,10 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
             vertex alt_t2i =
                 (t2i == around_lasty[0]) ? around_lasty[1] : around_lasty[0];
             double alt_gi = gain + C[lasty * N + alt_t2i];
-            if (alt_t2i != t1 && !X[lasty * N + alt_t2i]) {
+            if (alt_t2i != t1 && !broken(L, lasty, alt_t2i)) {
               vector<vertex> L_copy(L);
-              vector<bool> X_copy(X);
               L_copy.push_back(alt_t2i);
-              X_copy[lasty * N + alt_t2i] = X_copy[alt_t2i * N + lasty] = true;
-              return chooseY(tour, t1, alt_t2i, alt_gi, L_copy, X_copy, Y, i);
+              return chooseY(tour, t1, alt_t2i, alt_gi, L_copy, i);
             }
           }
           // Else no improvement found, terminate choice of x_i
@@ -224,26 +222,21 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
 }
 
 bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
-                 vector<vertex> L, vector<bool> X, vector<bool> Y,
-                 const int i) {
-  vector<vertex> neighbours_ordered =
-      neighbourhood(t1, lastx, gain, tour, X, Y);
+                 vector<vertex> L, const int i) {
+  vector<vertex> neighbours_ordered = neighbourhood(t1, lastx, gain, tour, L);
 
   for (const vertex& t_odd : neighbours_ordered) {
     // Make a copy, since all trials for t_odd are independent
     vector<vertex> L_copy(L);
-    vector<bool> Y_copy(Y);
 
     // Add edge (lastx, t_odd)
     L_copy.push_back(t_odd);
-    // Mark it as added
-    Y_copy[lastx * N + t_odd] = Y_copy[t_odd * N + lastx] = true;
 
     // Gain from adding (lastx, t_odd)
     double gc = gain - C[lastx * N + t_odd];
 
     // Stop at first improving tour
-    if (chooseX(tour, t1, t_odd, gc, L_copy, X, Y_copy, i + 1)) return true;
+    if (chooseX(tour, t1, t_odd, gc, L_copy, i + 1)) return true;
     // else if (i > 2 || G > 0)      return false;
     // If no improvement has been found and G == 0 and i > 2 we allow for some
     // backtracking, that is trying other neighbours

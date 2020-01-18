@@ -20,7 +20,7 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 struct Param {
-  const bool print_console = true, load_csv = false, save_csv = true;
+  const bool print_console = true, load_csv = true, save_csv = false;
   const unsigned int N = 50, N_incr = 5, max_iter = 10;
 };
 
