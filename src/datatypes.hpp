@@ -1,9 +1,15 @@
-#ifndef EDGE_H
-#define EDGE_H
+#ifndef DATATYPES_H
+#define DATATYPES_H
 
 #include <functional>
 
 typedef unsigned int vertex;
+
+struct Node {
+  vertex u, v;
+  Node(const vertex& = -1, const vertex& = -1);
+  bool operator==(const Node&) const;
+};
 
 struct Edge {
   vertex a, b;
@@ -15,4 +21,4 @@ struct Edge {
   };
 };
 
-#endif /* EDGE_H */
+#endif /* DATATYPES_H */

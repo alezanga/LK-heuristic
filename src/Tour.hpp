@@ -5,8 +5,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Edge.hpp"
-#include "Node.hpp"
+#include "datatypes.hpp"
 
 typedef unsigned int vertex;
 
@@ -35,8 +34,8 @@ class Tour {
   // Iterator begin();
   // Iterator end();
 
-  Tour(unsigned int, std::vector<Node> = std::vector<Node>(),
-       const double* = nullptr);
+  Tour(unsigned int, const std::vector<Node>& = std::vector<Node>(),
+       const double = 0.0);
 
   std::pair<bool, std::vector<Node>> generate(const std::vector<vertex>&) const;
 

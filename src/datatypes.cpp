@@ -1,4 +1,10 @@
-#include "Edge.hpp"
+#include "datatypes.hpp"
+
+Node::Node(const vertex& a, const vertex& b) : u(a), v(b) {}
+
+bool Node::operator==(const Node& o) const {
+  return (v == o.v && u == o.u) || (v == o.u && u == o.v);
+}
 
 Edge::Edge(const vertex& x, const vertex& y) : a(x), b(y) {}
 

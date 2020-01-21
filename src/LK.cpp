@@ -1,5 +1,4 @@
 #include "LK.hpp"
-#include "Node.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 
@@ -11,9 +10,10 @@ using std::unordered_set;
 using std::vector;
 
 // TOCHECK: intensification. keep track of common edges. Should work
-// TODO: 2-opt trials when a solution is found (nonsequential)
+// TODO: 4-opt trials when a solution is found (nonsequential)
 // TODO: random restart
 // TODO: put a max K value, or just consider max complexity
+// TODO: check scope of pointer values (for leaks)
 
 /**
  * Build Lin-Kernighan heuristic solver
@@ -26,17 +26,10 @@ using std::vector;
  * @param int_depth minimum depth to apply intensification
  * @param int_sols minimum number of solutions before applying intensification
  */
-LK::LK(unsigned int N, const double* C, const Tour& t, unsigned int max_neigh,
-       unsigned int int_depth, unsigned int int_sols)
-    : N(N),
-      C(C),
-      G(0.0),
-      good_edges(nullptr),
-      intensify(false),
-      max_neighbours(max_neigh > 0 ? max_neigh : N - 3),
-      intens_min_depth(int_depth),
-      intens_min_sols(int_sols) {
+LK::LK(unsigned int N, const double* C, const Tour& t)
+    : N(N), C(C), G(0.0), good_edges(nullptr), intensify(false) {
   solutions.push_back(t);
+  if (P.max_neighbours == 0) P.max_neighbours = N - 3;
 }
 
 LK::~LK() {
@@ -83,7 +76,7 @@ void LK::solve() {
     // Save improved solution
     solutions.push_back(current);
     // If we obtained some local optima, start intensification
-    if (solutions.size() > intens_min_sols) intensify = true;
+    if (solutions.size() > P.intens_min_sols) intensify = true;
   }
   // Stop, since no run improved the gain
 }
@@ -94,7 +87,7 @@ bool LK::improve(Tour& tour) {
     for (const vertex& t2 : around) {
       // Start by removing edge (t1, t2) = x1
       // If it is a good edge then stop and try the other neighbour
-      bool removable = !intensify || 1 < intens_min_depth || !good_edges ||
+      bool removable = !intensify || 1 < P.intens_min_depth || !good_edges ||
                        good_edges->find(Edge(t1, t2)) == good_edges->end();
       if (!removable) continue;
 
@@ -175,7 +168,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
         // succ_n = t_2i+2, now search for a proper x_i+1
         // If (t_2i+1, t_2i+2) = (n, succ_n) has not been already broken and is
         // not a good edge
-        bool removable = !intensify || i + 1 < intens_min_depth ||
+        bool removable = !intensify || i + 1 < P.intens_min_depth ||
                          !good_edges ||
                          good_edges->find(Edge(n, succ_n)) == good_edges->end();
         if (!broken(L, n, succ_n) && removable) {
@@ -199,7 +192,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
   // (bounded by max)
   vector<vertex> ord_neighbours;
   for (unsigned int i = 0;
-       i < N && neighbours[i].second != -1 && i < max_neighbours; ++i)
+       i < N && neighbours[i].second != -1 && i < P.max_neighbours; ++i)
     ord_neighbours.push_back(neighbours[i].second);
   return ord_neighbours;
 }
@@ -213,7 +206,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
     // Consider removing edge (lasty, t2i)
     double gi = gain + C[lasty * N + t2i];
 
-    bool removable = !intensify || i < intens_min_depth || !good_edges ||
+    bool removable = !intensify || i < P.intens_min_depth || !good_edges ||
                      good_edges->find(Edge(lasty, t2i)) == good_edges->end();
     if (t2i != t1 && !broken(L, lasty, t2i) && removable) {
       // TOCHECK: removed !Y[lasty * N + t2i]. A tour edge cannot have been
@@ -247,6 +240,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
             // Update set of good edges with currently added and removed edges
             // NOTE: adding (t2i, t1) is not necessary
             if (good_edges == nullptr)
+              // Set with edges of first improved tour (1st iteration)
               good_edges = tour.edgeSet();
             else
               updateGoodEdges(L);
@@ -310,13 +304,4 @@ const TSPsolution LK::getSolution() const {
   Tour final_tour = solutions.back();
   return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
                      final_tour.toString());
-}
-
-Tour LK::initializeTour(const unsigned int N, const double* C) {
-  vector<Node> r(N);
-  for (vertex i = 0; i < N; ++i) {
-    r[i] = (i == 0) ? Node(N - 1, i + 1)
-                    : ((i == N - 1) ? Node(i - 1, 0) : Node(i - 1, i + 1));
-  }
-  return Tour(N, r, C);
 }

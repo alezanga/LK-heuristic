@@ -4,10 +4,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Edge.hpp"
+#include "Params.cpp"
+#include "datatypes.hpp"
 
 struct Tour;
-typedef unsigned int vertex;
 struct TSPsolution;
 
 class LK {
@@ -18,11 +18,7 @@ class LK {
   double G;
   std::unordered_set<Edge, Edge::Hash>* good_edges;
   bool intensify;
-
-  // Calibrated params
-  unsigned int max_neighbours;
-  unsigned int intens_min_depth;
-  unsigned int intens_min_sols;
+  Params P;
 
   static bool broken(const std::vector<vertex>&, const vertex&, const vertex&);
   static bool joined(const std::vector<vertex>&, const vertex&, const vertex&);
@@ -52,7 +48,6 @@ class LK {
   bool improve(Tour&);
 
  public:
-  static Tour initializeTour(const unsigned int, const double*);
   /**
    * Build Lin-Kernighan heuristic solver
    *
@@ -64,8 +59,7 @@ class LK {
    * @param int_depth minimum depth to apply intensification
    * @param int_sols minimum number of solutions before applying intensification
    */
-  LK(unsigned int, const double*, const Tour&, unsigned int = 0,
-     unsigned int = 4, unsigned int = 6);
+  LK(unsigned int, const double*, const Tour&);
   ~LK();
   void solve();
   const TSPsolution getSolution() const;

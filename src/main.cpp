@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <experimental/filesystem>
 #include <fstream>
@@ -7,7 +8,8 @@
 #include <vector>
 
 #include "CostGen.hpp"
-#include "LK.hpp"
+#include "IteratedLK.hpp"
+#include "Params.cpp"
 #include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
@@ -18,12 +20,6 @@ using std::pair;
 using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
-
-struct Param {
-  // TODO: add description
-  const bool print_console = true, load_csv = true, save_csv = false;
-  const unsigned int N = 50, N_incr = 5, max_iter = 10;
-};
 
 // Global vector with time threshold to visualize when finished
 vector<double> rangeThreshold = {0.1, 1, 10, 100};
@@ -37,12 +33,15 @@ unsigned int timeRange(double time) {
   return x;
 }
 
-void testTimes(const Param& P) {
+void testTimes(const Params& P) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
-  std::ofstream filesol((logd / "solutions.txt").string(), std::ofstream::out);
+  std::ofstream sol_cplex((logd / "solCPLEX.txt").string(), std::ofstream::out);
+  std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
   std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
+
+  const std::vector<string> fileToRead{"tsp_95.csv", "tsp_90.csv"};
 
   CostGen gencost;
 
@@ -65,6 +64,10 @@ void testTimes(const Param& P) {
       std::chrono::_V2::system_clock::time_point start, end;
       double elapsed_seconds;
       if (P.load_csv) {
+        string filename = dit->path().filename().string();
+        if (std::find(fileToRead.begin(), fileToRead.end(), filename) ==
+            fileToRead.end())
+          continue;
         pair<unsigned int, double*> instance =
             gencost.loadFromCsv(dit->path().string());
         N = instance.first;
@@ -75,27 +78,23 @@ void testTimes(const Param& P) {
       }
 
       // LK model
-      LK lk(N, costs, LK::initializeTour(N, costs), N, 4, 5);
-      // Solve problem and measure time
-      start = std::chrono::system_clock::now();
-      lk.solve();
-      end = std::chrono::system_clock::now();
-      elapsed_seconds = std::chrono::duration<double>(end - start).count();
-      cout << "Solved in " << elapsed_seconds << "\n";
-      cout << lk.getSolution();
+      pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, sol_lk);
+      sol_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
+             << "Total time: " << lk_res.second << "\n"
+             << lk_res.first << std::endl;
 
       // Create CPLEX TSP problem with N holes
-      // TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
-      // // Solve problem and measure time
-      // start = std::chrono::system_clock::now();
-      // mod.solve();
-      // end = std::chrono::system_clock::now();
-      // elapsed_seconds = std::chrono::duration<double>(end - start).count();
-      // // Log solution to file and add element to display tables
-      // filesol << mod.getSolution();
-      // resultsTable.addRow({N, elapsed_seconds});
-      // rangeSize[timeRange(elapsed_seconds)] += string(" ") +=
-      // std::to_string(N);
+      TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
+      // Solve problem and measure time
+      start = std::chrono::system_clock::now();
+      mod.solve();
+      end = std::chrono::system_clock::now();
+      elapsed_seconds = std::chrono::duration<double>(end - start).count();
+      sol_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
+      // Log solution to file and add element to display tables
+      sol_cplex << mod.getSolution();
+      resultsTable.addRow({N, elapsed_seconds});
+      rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
 
       // Increment
       if (P.load_csv)
@@ -131,11 +130,12 @@ void testTimes(const Param& P) {
   } catch (std::exception& e) {
     std::cout << ">>> EXCEPTION: " << e.what() << std::endl;
   }
-  filesol.close();
+  sol_cplex.close();
+  sol_lk.close();
   fileres.close();
 }
 
 int main() {
-  testTimes(Param());
+  testTimes(Params());
   return 0;
 }

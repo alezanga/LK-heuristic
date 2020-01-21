@@ -6,25 +6,8 @@ using std::pair;
 using std::unordered_set;
 using std::vector;
 
-Tour::Tour(unsigned int N, vector<Node> ed, const double* C) : N(N), tour(ed) {
-  // Compute the tour cost
-  double tour_cost = 0.0;
-  vertex pred = -1, n = 0;
-  bool enter = true;
-  while (enter || n != 0) {
-    enter = false;
-    if (ed[n].u != pred) {
-      tour_cost += C[n * N + ed[n].u];
-      pred = n;
-      n = ed[n].u;
-    } else {
-      tour_cost += C[n * N + ed[n].v];
-      pred = n;
-      n = ed[n].v;
-    }
-  }
-  cost = tour_cost;
-};
+Tour::Tour(unsigned int N, const vector<Node>& ed, const double c)
+    : N(N), tour(ed), cost(c){};
 
 /**
  * Remove edge (L[i], L[i+1]) and add L[i-1] to L[i] successors, replacing
