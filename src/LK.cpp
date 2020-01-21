@@ -7,16 +7,40 @@
 #include <limits>
 
 using std::pair;
+using std::unordered_set;
 using std::vector;
 
-// TODO: intensification. keep track of common edges
+// TOCHECK: intensification. keep track of common edges. Should work
 // TODO: 2-opt trials when a solution is found (nonsequential)
 // TODO: random restart
 // TODO: put a max K value, or just consider max complexity
 
-LK::LK(unsigned int N, const double* C, const Tour& t, unsigned int max_neigh)
-    : N(N), C(C), max_neighbours(max_neigh > 0 ? max_neigh : N - 3), G(0.0) {
+/**
+ * Build Lin-Kernighan heuristic solver
+ *
+ * @param N size of the problem
+ * @param C costs matrix
+ * @param t initial tour
+ * @param max_neigh maximum number of neighbours to consider when searching an
+ * edge to add
+ * @param int_depth minimum depth to apply intensification
+ * @param int_sols minimum number of solutions before applying intensification
+ */
+LK::LK(unsigned int N, const double* C, const Tour& t, unsigned int max_neigh,
+       unsigned int int_depth, unsigned int int_sols)
+    : N(N),
+      C(C),
+      G(0.0),
+      good_edges(nullptr),
+      intensify(false),
+      max_neighbours(max_neigh > 0 ? max_neigh : N - 3),
+      intens_min_depth(int_depth),
+      intens_min_sols(int_sols) {
   solutions.push_back(t);
+}
+
+LK::~LK() {
+  if (good_edges) delete good_edges;
 }
 
 bool LK::broken(const vector<vertex>& L, const vertex& a, const vertex& b) {
@@ -34,6 +58,18 @@ bool LK::joined(const vector<vertex>& L, const vertex& a, const vertex& b) {
   return false;
 }
 
+/**
+ * Intersect edges of current 'good_edges' set with newly broken edges.
+ * Note that 'good_edges' must be initialized
+ * @param L list of removed and added edges
+ */
+void LK::updateGoodEdges(const vector<vertex>& L) {
+  for (unsigned int i = 0; i < L.size() - 1; i += 2) {
+    Edge e(L[i], L[i + 1]);
+    good_edges->erase(e);
+  }
+}
+
 void LK::solve() {
   bool improved = true;
 
@@ -46,6 +82,8 @@ void LK::solve() {
     improved = improve(current);
     // Save improved solution
     solutions.push_back(current);
+    // If we obtained some local optima, start intensification
+    if (solutions.size() > intens_min_sols) intensify = true;
   }
   // Stop, since no run improved the gain
 }
@@ -55,12 +93,18 @@ bool LK::improve(Tour& tour) {
     vector<vertex> around = tour.around(t1);
     for (const vertex& t2 : around) {
       // Start by removing edge (t1, t2) = x1
+      // If it is a good edge then stop and try the other neighbour
+      bool removable = !intensify || 1 < intens_min_depth || !good_edges ||
+                       good_edges->find(Edge(t1, t2)) == good_edges->end();
+      if (!removable) continue;
+
+      // Remove (t1, t2)
       vector<vertex> L{t1, t2};
       // Gain by removing edge (t1, t2)
       double g0 = C[t1 * N + t2];
       // Find neighbours of t2. Y is empty since there are still no added
       // edges
-      vector<vertex> neighbours = neighbourhood(t1, t2, g0, tour, L);
+      vector<vertex> neighbours = neighbourhood(t1, t2, g0, tour, L, 1);
 
       // Try all edges (t2, t3) = y1
       for (const vertex& t3 : neighbours) {
@@ -100,7 +144,8 @@ bool LK::improve(Tour& tour) {
  */
 vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
                                  double gain, const Tour& tour,
-                                 const vector<vertex>& L) {
+                                 const vector<vertex>& L,
+                                 const unsigned int i) {
   // Possible neighbours are all nodes, excluding itself and the two
   // neighbours in the current tour. Each pair contains the potential gain and
   // the corresponding vertex
@@ -128,9 +173,12 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
       // For each of the two possible edges to remove
       for (const vertex& succ_n : around_n) {
         // succ_n = t_2i+2, now search for a proper x_i+1
-        // If (t_2i+1, t_2i+2) = (n, succ_n) has not been already broken (is in
-        // X) and has not been already added (in Y)
-        if (!broken(L, n, succ_n)) {
+        // If (t_2i+1, t_2i+2) = (n, succ_n) has not been already broken and is
+        // not a good edge
+        bool removable = !intensify || i + 1 < intens_min_depth ||
+                         !good_edges ||
+                         good_edges->find(Edge(n, succ_n)) == good_edges->end();
+        if (!broken(L, n, succ_n) && removable) {
           // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
           // Compute potential gain of removing x_i+1 and adding y_i
@@ -157,7 +205,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
 }
 
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
-                 vector<vertex>& L, const int i) {
+                 vector<vertex>& L, const unsigned int i) {
   // TODO: this function could be rewritten better
   vector<vertex> around_lasty = tour.around(lasty);
   // For each of the two neighbours of lasty
@@ -165,7 +213,9 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
     // Consider removing edge (lasty, t2i)
     double gi = gain + C[lasty * N + t2i];
 
-    if (t2i != t1 && !broken(L, lasty, t2i)) {
+    bool removable = !intensify || i < intens_min_depth || !good_edges ||
+                     good_edges->find(Edge(lasty, t2i)) == good_edges->end();
+    if (t2i != t1 && !broken(L, lasty, t2i) && removable) {
       // TOCHECK: removed !Y[lasty * N + t2i]. A tour edge cannot have been
       // joined
 
@@ -191,9 +241,16 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
           // Save best improvement so far
           G = relink_gain;
           // Go on improving
-          if (!chooseY(tour, t1, t2i, gi, L, i))
+          if (!chooseY(tour, t1, t2i, gi, L, i)) {
             // Save new tour with relink
             tour.update(is_tour.second, relink_gain);
+            // Update set of good edges with currently added and removed edges
+            // NOTE: adding (t2i, t1) is not necessary
+            if (good_edges == nullptr)
+              good_edges = tour.edgeSet();
+            else
+              updateGoodEdges(L);
+          }
           // Improvement found, restart
           return true;
         } else if (i <= 2) {
@@ -228,8 +285,9 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
 }
 
 bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
-                 vector<vertex>& L, const int i) {
-  vector<vertex> neighbours_ordered = neighbourhood(t1, lastx, gain, tour, L);
+                 vector<vertex>& L, const unsigned int i) {
+  vector<vertex> neighbours_ordered =
+      neighbourhood(t1, lastx, gain, tour, L, i);
 
   for (const vertex& t_odd : neighbours_ordered) {
     // Add edge (lastx, t_odd)

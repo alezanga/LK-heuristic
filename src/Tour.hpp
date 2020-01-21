@@ -1,9 +1,11 @@
-#ifndef TOUR
-#define TOUR
+#ifndef TOUR_H
+#define TOUR_H
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "Edge.hpp"
 #include "Node.hpp"
 
 typedef unsigned int vertex;
@@ -42,8 +44,10 @@ class Tour {
 
   std::vector<vertex> around(const vertex&) const;
 
+  std::unordered_set<Edge, Edge::Hash>* edgeSet() const;
+
   std::string toString() const;
   double getObjVal() const;
 };
 
-#endif /* TOUR */
+#endif /* TOUR_H */

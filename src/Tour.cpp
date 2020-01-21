@@ -1,9 +1,9 @@
 #include "Tour.hpp"
 
 #include <assert.h>
-#include <unordered_set>
 
 using std::pair;
+using std::unordered_set;
 using std::vector;
 
 Tour::Tour(unsigned int N, vector<Node> ed, const double* C) : N(N), tour(ed) {
@@ -129,6 +129,15 @@ std::string Tour::toString() const {
 }
 
 double Tour::getObjVal() const { return cost; }
+
+unordered_set<Edge, Edge::Hash>* Tour::edgeSet() const {
+  unordered_set<Edge, Edge::Hash>* edges = new unordered_set<Edge, Edge::Hash>;
+  for (unsigned int i = 0; i < N; ++i) {
+    edges->insert(Edge(i, tour[i].u));
+    edges->insert(Edge(i, tour[i].v));
+  }
+  return edges;
+}
 
 // Tour::Iterator::Iterator(vector<Node>::iterator p) : ptr(p) {}
 // bool Tour::Iterator::operator!=(const Iterator& o) const {

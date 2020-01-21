@@ -10,7 +10,7 @@ ODIR = build
 SRCDIR = src
 BIN = bin
 
-OBJ = $(ODIR)/main.o $(ODIR)/TSPmodel.o $(ODIR)/TSPsolution.o $(ODIR)/CostGen.o $(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/Node.o
+OBJ = $(ODIR)/main.o $(ODIR)/TSPmodel.o $(ODIR)/TSPsolution.o $(ODIR)/CostGen.o $(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/Node.o $(ODIR)/Edge.o
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 		$(CC) $(CPPFLAGS) -I$(CPX_INCDIR) -c $^ -o $@

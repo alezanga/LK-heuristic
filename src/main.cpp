@@ -20,6 +20,7 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 struct Param {
+  // TODO: add description
   const bool print_console = true, load_csv = true, save_csv = false;
   const unsigned int N = 50, N_incr = 5, max_iter = 10;
 };
@@ -74,7 +75,7 @@ void testTimes(const Param& P) {
       }
 
       // LK model
-      LK lk(N, costs, LK::initializeTour(N, costs));
+      LK lk(N, costs, LK::initializeTour(N, costs), N, 4, 5);
       // Solve problem and measure time
       start = std::chrono::system_clock::now();
       lk.solve();
@@ -135,8 +136,6 @@ void testTimes(const Param& P) {
 }
 
 int main() {
-  // TODO: add description
-
   testTimes(Param());
   return 0;
 }
