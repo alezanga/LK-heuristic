@@ -41,7 +41,7 @@ void testTimes(const Params& P) {
   std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
   std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
 
-  const std::vector<string> fileToRead{"tsp_95.csv", "tsp_90.csv"};
+  const std::vector<string> fileToRead{"tsp60.csv"};
 
   CostGen gencost;
 
@@ -58,7 +58,7 @@ void testTimes(const Params& P) {
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
     fs::directory_iterator dit = fs::directory_iterator(insd);
     for (uint e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
-         ++e) {
+         ++e, ++dit) {
       // Create/load cost matrix
       double* costs = nullptr;
       std::chrono::_V2::system_clock::time_point start, end;
@@ -97,10 +97,7 @@ void testTimes(const Params& P) {
       rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
 
       // Increment
-      if (P.load_csv)
-        ++dit;
-      else
-        N += P.N_incr;
+      if (!P.load_csv) N += P.N_incr;
       // Delete costs matrix
       delete[] costs;
     }

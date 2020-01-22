@@ -111,6 +111,21 @@ std::string Tour::toString() const {
   return s_tour;
 }
 
+vector<vertex> Tour::toVector() const {
+  vector<vertex> v;
+  vertex i = 0;
+  std::unordered_set<int> visited;
+  while (visited.size() < N) {
+    v.push_back(i);
+    visited.insert(i);
+    if (visited.find(tour[i].u) != visited.end())
+      i = tour[i].v;
+    else
+      i = tour[i].u;
+  }
+  return v;
+}
+
 double Tour::getObjVal() const { return cost; }
 
 unordered_set<Edge, Edge::Hash>* Tour::edgeSet() const {

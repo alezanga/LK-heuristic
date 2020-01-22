@@ -8,13 +8,14 @@ struct Params {
   const bool save_csv = false;
   const unsigned int N = 50;
   const unsigned int N_incr = 5;
-  const unsigned int max_iter = 10;
+  const unsigned int max_iter = 30;
 
   // Params for LK
-  unsigned int max_neighbours = 10;
+  const unsigned int K = 50;
+  unsigned int max_neighbours = 0;
   const unsigned int intens_min_depth = 4;
   const unsigned int intens_min_sols = 7;
-  const unsigned int LK_iterations = 5;
+  const unsigned int LK_iterations = 7;
 };
 
 #endif /* PARAMS_H */

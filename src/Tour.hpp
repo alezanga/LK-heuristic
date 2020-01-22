@@ -46,6 +46,7 @@ class Tour {
   std::unordered_set<Edge, Edge::Hash>* edgeSet() const;
 
   std::string toString() const;
+  std::vector<vertex> toVector() const;
   double getObjVal() const;
 };
 
