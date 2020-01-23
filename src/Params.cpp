@@ -15,7 +15,7 @@ struct Params {
   unsigned int max_neighbours = 0;
   const unsigned int intens_min_depth = 4;
   const unsigned int intens_min_sols = 7;
-  const unsigned int LK_iterations = 7;
+  const unsigned int LK_iterations = 10;
 };
 
 #endif /* PARAMS_H */

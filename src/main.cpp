@@ -14,6 +14,7 @@
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 #include "VariadicTable.hpp"
+#include "python_adapter.hpp"
 
 using std::cout;
 using std::pair;
@@ -41,7 +42,9 @@ void testTimes(const Params& P) {
   std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
   std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
 
-  const std::vector<string> fileToRead{"tsp60.csv"};
+  const std::vector<string> fileToRead{"tsp_12.csv", "tsp_10.csv", "tsp_50.csv",
+                                       "tsp60.csv",  "tsp_80.csv", "tsp_90.csv",
+                                       "tsp_95.csv"};
 
   CostGen gencost;
 
@@ -57,6 +60,10 @@ void testTimes(const Params& P) {
     // Declare a vector to keep track of problem size and time to solve
     vector<string> rangeSize(rangeThreshold.size() + 1, "");
     fs::directory_iterator dit = fs::directory_iterator(insd);
+    vector<pair<unsigned int, double>> cplex_times;
+    vector<pair<unsigned int, double>> cplex_values;
+    vector<pair<unsigned int, double>> heur_times;
+    vector<pair<unsigned int, double>> heur_values;
     for (uint e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
          ++e, ++dit) {
       // Create/load cost matrix
@@ -81,7 +88,9 @@ void testTimes(const Params& P) {
       pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, sol_lk);
       sol_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
              << "Total time: " << lk_res.second << "\n"
-             << lk_res.first << std::endl;
+             << lk_res.first;
+      sol_lk << "----------------------------------------------------\n"
+             << std::endl;
 
       // Create CPLEX TSP problem with N holes
       TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
@@ -92,15 +101,32 @@ void testTimes(const Params& P) {
       elapsed_seconds = std::chrono::duration<double>(end - start).count();
       sol_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
       // Log solution to file and add element to display tables
-      sol_cplex << mod.getSolution();
+      TSPsolution cplex_res = mod.getSolution();
+      sol_cplex << cplex_res;
       resultsTable.addRow({N, elapsed_seconds});
       rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
+
+      heur_times.push_back({N, lk_res.second});
+      heur_values.push_back({N, lk_res.first.objVal});
+      cplex_times.push_back({N, elapsed_seconds});
+      cplex_values.push_back({N, cplex_res.objVal});
 
       // Increment
       if (!P.load_csv) N += P.N_incr;
       // Delete costs matrix
       delete[] costs;
     }
+
+    initPython();     // Set up Python env variables and
+    Py_Initialize();  // Init Python interpreter
+
+    // Plot data with Python
+    plot_times(cplex_times, heur_times, "Execution times over problem size (N)",
+               "times");
+    plot_objvalues(cplex_values, heur_values,
+                   "Objective values for problem size (N)", "values");
+
+    Py_Finalize();  // Undo all initializations and destroy the interpreter
 
     // Prepare table with time ranges
     for (unsigned int i = 0; i < rangeThreshold.size(); ++i) {
