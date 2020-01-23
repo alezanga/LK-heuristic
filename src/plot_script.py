@@ -1,16 +1,5 @@
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import matplotlib.cm as cm
 import numpy as np
-
-
-# def uniqueish_color():
-#     """
-#     Gets a random color
-
-#     @return random color
-#     """
-#     return plt.cm.gist_ncar(np.random.random())
 
 
 def plotTimes(opt_times, heur_times, title, filename):
@@ -26,7 +15,7 @@ def plotTimes(opt_times, heur_times, title, filename):
     @param filename (str): a string with filename to save png plot (empty => do not save)
     """
 
-    if title:
+    if filename:
         print("Generazione grafico con tempi di esecuzione nella cartella plots/")
 
     plt.clf()
@@ -46,7 +35,7 @@ def plotTimes(opt_times, heur_times, title, filename):
     plt.legend()
     plt.xlabel('Problem size (number of vertices)')
     plt.ylabel('Execution time (s)')
-    if title:
+    if filename:
         plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)
     else:
         plt.show()
@@ -65,7 +54,7 @@ def plotError(opt_value, heur_value, title, filename):
     @param filename (str): a string with filename to save png plot (empty => do not save)
     """
 
-    if title:
+    if filename:
         print("Generazione grafico sull'errore nella cartella plots/")
 
     plt.clf()
@@ -92,56 +81,46 @@ def plotError(opt_value, heur_value, title, filename):
     plt.legend()
     plt.xlabel('Problem size (number of vertices)')
     plt.ylabel('Objective value')
-    if title:
+    if filename:
         plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)
     else:
         plt.show()
 
 
-# def plotClusters(clusters, centroids, title, filename):
-#     """
-#     Plots the graphs of clustering
+def plotPath(coords, tour=[], filename=""):
+    """
+    Plots vertices and tour
 
-#     @param centroids (list[dict]): a list of dictionary t with pair (t['x'], t['y']) which represents
-#     the coordinates (x, y) of a centroid
+    @param coords (list[tuple[float, float]]): vertices coordinates
 
-#     @param clusters (list[list[dict]]): each innermost list represent a cluster and its tuples
-#     are the coordinates of its points. Note that clusters[i] cluster has centroid centroid[i]
+    @param tour (list[int]): ordered indexes for tour
 
-#     @param title (str): a string with clustering title
+    @param filename (str): file where to save plot (empty => do not save and show)
+    """
 
-#     @param filename (str): a string with filename to save png plot (empty => do not save)
-#     """
+    if filename:
+        print("Generazione immagine delle coordinate nella cartella plots/")
 
-#     print("Generazione dei grafici del clustering nella cartella plots/")
+    n = len(coords)
+    plt.clf()
+    plt.title("TSP points (size " + str(len(coords)) + ")")
 
-#     k = len(clusters)
+    x, y = zip(*coords)
 
-#     plt.clf()
-#     colors = cm.rainbow(np.linspace(0, 1, k))
-#     plt.xticks([])
-#     plt.yticks([])
-#     img = mpimg.imread('img/USA_Counties.png')
-#     for cluster, centroid, color in zip(clusters, centroids, colors):
-#         x_list = []
-#         y_list = []
-#         # Draw lines from centroid to each point (county)
-#         for county in cluster:
-#             xs = [county['x'], centroid['x']]
-#             ys = [county['y'], centroid['y']]
-#             x_list.append(xs)
-#             y_list.append(ys)
-#             plt.plot(xs, ys, color=color, linewidth=0.5, zorder=2)
-#             plt.plot(xs, ys, color='k', linewidth=0.75, zorder=1)
-#         # Draw each cluster point (county)
-#         plt.scatter(x_list, y_list, s=0.80, color=color,  # s is point size
-#                     alpha=0.5, edgecolors='k', linewidths=0.5, zorder=4)
-#         # Draw centroid of cluster
-#         plt.scatter(centroid['x'], centroid['y'], s=50, color=color, edgecolors='k',
-#                     linewidths=0.75, marker='H', zorder=3)
-#     plt.title(title)
-#     img = plt.imshow(img)
-#     if filename:
-#         plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)
+    plt.scatter(x, y, marker='o', color='red', zorder=-1)
 
-    # plt.show()
+    if len(tour) == len(coords):
+        for i in range(0, n-1):
+            u = tour[i]
+            v = tour[i+1]
+            plt.plot([x[u], x[v]], [y[u], y[v]], 'g-', zorder=1)
+        u = tour[0]
+        v = tour[n-1]
+        plt.plot([x[u], x[v]], [y[u], y[v]], 'g-', zorder=1)
+
+    plt.axis("tight")
+
+    if filename:
+        plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)
+    else:
+        plt.show()

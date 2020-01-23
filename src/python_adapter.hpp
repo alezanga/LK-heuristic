@@ -116,60 +116,41 @@ void plot_objvalues(const vector<pair<unsigned int, double>>& opti,
                                                py_title, py_fname, NULL);
 }
 
-// void plotClusters(const vector<vector<County>>& counties,
-//                   const vector<pair<int, Coordinate>>& centroids,
-//                   const std::string& title = "",
-//                   const std::string& fname = "") {
-//   // PyGILState_STATE gstate = PyGILState_Ensure();
+void plot_points(const vector<pair<double, double>>& coord,
+                 const vector<vertex>& path = vector<vertex>(),
+                 const std::string& filename = "") {
+  PyObject* py_coord = PyList_New(coord.size());
+  for (unsigned int i = 0; i < coord.size(); ++i) {
+    PyObject* xy = Py_BuildValue("(dd)", coord.at(i).first, coord.at(i).second);
+    // Add tuple to list
+    PyList_SET_ITEM(py_coord, i, xy);
+  }
 
-//   // Prepare a list of list with representing the list of clusters
-//   PyObject *py_clusters = nullptr, *py_cluster = nullptr;
-//   py_clusters = PyList_New(counties.size());
-//   for (int i = 0; i < counties.size(); ++i) {
-//     py_cluster = PyList_New(counties[i].size());
-//     for (int j = 0; j < counties[i].size(); ++j) {
-//       PyList_SET_ITEM(py_cluster, j,
-//                       Py_BuildValue("{s:d,s:d}", "x", counties[i][j].getX(),
-//                                     "y", counties[i][j].getY()));
-//     }
-//     PyList_SET_ITEM(py_clusters, i, py_cluster);
-//   }
+  // bool haspath = !path.empty();
+  PyObject* py_path = PyList_New(path.size());
+  for (unsigned int i = 0; i < path.size(); ++i) {
+    PyObject* vert = Py_BuildValue("i", path[i]);
+    // Add tuple to list
+    PyList_SET_ITEM(py_path, i, vert);
+  }
 
-//   // Prepare a list with centroids (tuple of coords)
-//   PyObject* py_centroids = PyList_New(centroids.size());
-//   for (int i = 0; i < centroids.size(); ++i) {
-//     PyObject* centroids_coords =
-//         Py_BuildValue("{s:d,s:d}", "x", centroids[i].second.getX(), "y",
-//                       centroids[i].second.getY());
-//     // Add tuple to list
-//     PyList_SET_ITEM(py_centroids, i, centroids_coords);
-//   }
+  // Load the module object
+  PyObject* pModule = PyImport_ImportModule("plot_script");
 
-//   // PyGILState_Release(gstate);
+  assert(pModule != nullptr);
 
-//   // Load the module object
-//   PyObject* pModule = PyImport_ImportModule("plot_script");
-//   /*if (pModule == nullptr) {
-//     PyErr_Print();
-//     std::exit(1);
-//   }*/
+  // Get plot function reference
+  PyObject* pFunc = PyObject_GetAttrString(pModule, "plotPath");
+  assert(pFunc != nullptr);
 
-//   assert(pModule != nullptr);
+  assert(PyCallable_Check(pFunc));  // Function must be callable
 
-//   // Get plot function reference
-//   PyObject* pFunc = PyObject_GetAttrString(pModule, "plotClusters");
-//   assert(pFunc != nullptr);
+  // Prepare string with file name
+  PyObject* py_fname = Py_BuildValue("s#", filename.c_str(), filename.size());
 
-//   assert(PyCallable_Check(pFunc));  // Function must be callable
-
-//   // Prepare string with name and save file name
-//   PyObject* py_title = Py_BuildValue("s#", title.c_str(), title.size());
-//   PyObject* py_fname = Py_BuildValue("s#", fname.c_str(), fname.size());
-
-//   // Call plot function
-//   PyObject* fun = PyObject_CallFunctionObjArgs(pFunc, py_clusters,
-//   py_centroids,
-//                                                py_title, py_fname, NULL);
-// }
+  // Call plot function
+  PyObject* fun =
+      PyObject_CallFunctionObjArgs(pFunc, py_coord, py_path, py_fname, NULL);
+}
 
 #endif /* PYTHON_ADAPTER */

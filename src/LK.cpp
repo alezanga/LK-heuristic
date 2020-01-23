@@ -301,9 +301,11 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
 }
 
 const TSPsolution LK::getSolution() const {
+  // TODO: maybe I can avoid passing both string and vector. I could also use
+  // python to plit the string
   Tour final_tour = solutions.back();
   return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
-                     final_tour.toString());
+                     final_tour.toString(), final_tour.toVector());
 }
 
 // bool LK::ns4opt(Tour& t) {
