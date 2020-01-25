@@ -20,6 +20,11 @@ const vector<pair<double, double>>* TSPinstance::getPoints() const {
   return points;
 }
 
+/**
+ * Generate a random regular polygon with n_sides
+ * @param h center height range  will be in [0, h)
+ * @param w center width range in [0, w)
+ */
 void TSPinstance::randomPolygon(unsigned int n_sides, unsigned int h,
                                 unsigned int w) {
   unsigned int seed =
@@ -63,22 +68,25 @@ void TSPinstance::generateRandomPolygons(unsigned int N) {
   unsigned int height = N;
 
   // Number of polygons to draw
-  std::uniform_int_distribution<unsigned int> randomUInt(1, N / 10);
+  std::uniform_int_distribution<unsigned int> randomUInt((N < 20) ? 1 : 2,
+                                                         N / 10);
   unsigned n_polygons = randomUInt(re);
 
-  // Reserve a minimum of 3 sides for each polygon
+  // Reserve a minimum of 4 sides for each polygon
   vector<unsigned int> sides_polygons(n_polygons, 3);
   unsigned int remainder = N - n_polygons * 3;
   // Split N into n_polygons numbers such that their sum is N.
   std::uniform_int_distribution<unsigned int> randomIndex(0, n_polygons - 1);
+  // TODO: max sides??
   while (remainder > 0) {
-    unsigned int max_incr = (remainder > N / 10) ? N / 10 : remainder;
+    unsigned int max_incr = (remainder > N / 12) ? N / 12 : remainder;
     std::uniform_int_distribution<unsigned int> randomIncrement(1, max_incr);
     unsigned int inc = randomIncrement(re);
     sides_polygons[randomIndex(re)] += inc;
     remainder -= inc;
   }
 
+  // Build each polygon
   for (unsigned int sides : sides_polygons) randomPolygon(sides, height, width);
 }
 
