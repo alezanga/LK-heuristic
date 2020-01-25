@@ -23,7 +23,6 @@ class LK {
   static bool broken(const std::vector<vertex>&, const vertex&, const vertex&);
   static bool joined(const std::vector<vertex>&, const vertex&, const vertex&);
   void updateGoodEdges(const std::vector<vertex>&);
-  // bool ns4opt(Tour&);
 
   std::vector<vertex> neighbourhood(const vertex&, const vertex&, double,
                                     const Tour&, const std::vector<vertex>&,

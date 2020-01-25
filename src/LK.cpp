@@ -65,7 +65,7 @@ void LK::updateGoodEdges(const vector<vertex>& L) {
 
 void LK::solve() {
   bool improved = true;
-
+  // int i = 0;
   while (improved) {
     // Reset gain
     G = 0.0;
@@ -73,9 +73,11 @@ void LK::solve() {
     Tour current = solutions.back();
     // Improve the current solution with LK
     improved = improve(current);
+    // std::cout << i << " - improved: " << improved << std::endl;
     // Save improved solution
     solutions.push_back(current);
     // If we obtained some local optima, start intensification
+    // i++;
     if (solutions.size() > P.intens_min_sols) intensify = true;
   }
   // Stop, since no run improved the gain
@@ -307,64 +309,3 @@ const TSPsolution LK::getSolution() const {
   return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
                      final_tour.toString(), final_tour.toVector());
 }
-
-// bool LK::ns4opt(Tour& t) {
-//   for (vertex a1 = 0; a1 < N; ++a1) {
-//     vector<vertex> around1 = t.around(a1);
-//     for (vertex a2 : around1) {
-//       Edge e1(a1, a2);
-//       if (good_edges->find(e1) != good_edges->end()) continue;
-//       for (vertex b1 = 0; b1 < N; ++b1) {
-//         if (b1 == a1 || b1 == a2) continue;
-//         vector<vertex> around2 = t.around(b1);
-//         for (vertex b2 : around2) {
-//           Edge e2(b1, b2);
-//           if (b2 == a1 || b2 == a2 || good_edges->find(e2) !=
-//           good_edges->end())
-//             continue;
-//           for (vertex c1 = 0; c1 < N; ++c1) {
-//             if (c1 == a1 || c1 == a2 || c1 == b1 || c1 == b2) continue;
-//             vector<vertex> around3 = t.around(c1);
-//             for (vertex c2 : around3) {
-//               Edge e3(c1, c2);
-//               if (c2 == a1 || c2 == a2 || c2 == b1 || c2 == b2 ||
-//                   good_edges->find(e3) != good_edges->end())
-//                 continue;
-//               for (vertex d1 = 0; d1 < N; ++d1) {
-//                 if (d1 == a1 || d1 == a2 || d1 == b1 || d1 == b2 || d1 == c1
-//                 ||
-//                     d1 == c2)
-//                   continue;
-//                 vector<vertex> around4 = t.around(d1);
-//                 for (vertex d2 : around4) {
-//                   Edge e4(d1, d2);
-//                   if (d2 == a1 || d2 == a2 || d2 == b1 || d2 == b2 ||
-//                       d2 == c1 || d2 == c2 ||
-//                       good_edges->find(e4) != good_edges->end())
-//                     continue;
-//                   vector<vertex> v1{a1, a2};
-//                   vector<vertex> v2{b1, b2};
-//                   vector<vertex> v3{c1, c2};
-//                   vector<vertex> v4{d1, d2};
-//                   double gain = C[a1 * N + a2] + C[b1 * N + b2] +
-//                                 C[c1 * N + c2] + C[d1 * N + d2];
-
-//                   for (auto a : v1) {
-//                     for (auto b : v2) {
-//                       if (b == a) continue;
-//                       for (auto c : v3) {
-//                         for (auto d : v4) {
-//                           // bAsta
-//                         }
-//                       }
-//                     }
-//                   }
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
