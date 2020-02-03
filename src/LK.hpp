@@ -4,8 +4,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Pair.hpp"
 #include "Params.cpp"
-#include "datatypes.hpp"
 
 struct Tour;
 struct TSPsolution;
@@ -14,9 +14,9 @@ class LK {
  private:
   unsigned int N;
   const double* C;
-  std::vector<Tour> solutions;
+  std::vector<Tour>& solutions;
   double G;
-  std::unordered_set<Edge, Edge::Hash>* good_edges;
+  std::unordered_set<Pair, Pair::Hash>* good_edges;
   bool intensify;
   Params P;
 
@@ -59,7 +59,7 @@ class LK {
    * @param int_depth minimum depth to apply intensification
    * @param int_sols minimum number of solutions before applying intensification
    */
-  LK(unsigned int, const double*, const Tour&);
+  LK(unsigned int, const double*, std::vector<Tour>&);
   ~LK();
   void solve();
   const TSPsolution getSolution() const;

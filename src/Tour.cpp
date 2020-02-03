@@ -1,4 +1,5 @@
 #include "Tour.hpp"
+#include "Pair.hpp"
 
 #include <assert.h>
 
@@ -6,7 +7,7 @@ using std::pair;
 using std::unordered_set;
 using std::vector;
 
-Tour::Tour(unsigned int N, const vector<Node>& ed, const double c)
+Tour::Tour(unsigned int N, const vector<Pair>& ed, const double c)
     : N(N), tour(ed), cost(c){};
 
 /**
@@ -16,7 +17,7 @@ Tour::Tour(unsigned int N, const vector<Node>& ed, const double c)
  * @param L list of alternating edges
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
  */
-void Tour::disconnect(vector<Node>& T, const vector<vertex>& L,
+void Tour::disconnect(vector<Pair>& T, const vector<vertex>& L,
                       unsigned int i) {
   if (i == L.size() - 1) return;
   assert(T[L[i]].u == L[i + 1] || T[L[i]].v == L[i + 1]);
@@ -35,7 +36,7 @@ void Tour::disconnect(vector<Node>& T, const vector<vertex>& L,
  * @param L list of alternating edges
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
  */
-void Tour::connect(vector<Node>& T, const vector<vertex>& L, unsigned int i) {
+void Tour::connect(vector<Pair>& T, const vector<vertex>& L, unsigned int i) {
   assert(T[L[i]].u == L[i - 1] || T[L[i]].v == L[i - 1]);
   // Connect to successor, and remove reference to predecessor
   if (T[L[i]].u == L[i - 1])
@@ -48,14 +49,15 @@ void Tour::connect(vector<Node>& T, const vector<vertex>& L, unsigned int i) {
 /**
  * Generate a new tour, by adding and removing edges in provided list
  * (alternatively).
+ * @param tour current tour object from which to start
  * @param L list of vertices, starting from the first edge to remove to the last
  * edge to add
- * @return if first element is true the second element is the new tour,
- * otherwise it's a default constructed placeholder
+ * @return a pointer to new tour, or nullptr if it wasn't a tour
  */
-pair<bool, vector<Node>> Tour::generate(const vector<vertex>& L) const {
+pair<bool, Tour> Tour::generate(const Tour& tour, const vector<vertex>& L,
+                                const double gain) {
   // Copy the current tour
-  vector<Node> tour_copy(tour);
+  vector<Pair> tour_copy(tour.tour);
 
   // vector<int> visited(N, 2);
 
@@ -67,9 +69,9 @@ pair<bool, vector<Node>> Tour::generate(const vector<vertex>& L) const {
 
   // Check if it's a tour: all N vertices must be visited exactly 2 times
   // SHOUlD BE DONE IN SUBSEQUENT CHECK
-  // if (tour_copy.size() != N) return {false, vector<Node>()};
+  // if (tour_copy.size() != N) return {false, vector<Pair>()};
   // for (const int& v : visited)
-  //   if (v != 2) return {false, vector<Node>()};
+  //   if (v != 2) return {false, vector<Pair>()};
 
   std::unordered_set<vertex> encountered;
   vertex n = 0, pred = -1;
@@ -80,20 +82,25 @@ pair<bool, vector<Node>> Tour::generate(const vector<vertex>& L) const {
   }
 
   // If all vertices could be encountered exactly once it's a tour
-  if (encountered.size() == N) return {true, tour_copy};
+  // Create new tour with updated cost
+  auto gg = (tour.cost) - gain;
+  if (encountered.size() == tour.N) return {true, Tour(tour.N, tour_copy, gg)};
 
-  return {false, vector<Node>()};
+  return {false, Tour(tour.N)};
 }
 
-void Tour::update(const vector<Node> t, const double gain) {
-  // Replace tour
-  tour = t;
-  // Update cost
-  cost -= gain;
-}
-
-vector<vertex> Tour::around(const vertex& n) const {
-  return vector<vertex>{tour[n].u, tour[n].v};
+/**
+ * Gives the two vertices connected to n in current tour ordered by decreasing
+ * cost of edge
+ * @param n vertex
+ * @param C cost matrix
+ * @return vector of two elements
+ */
+vector<vertex> Tour::around(const vertex& n, const double* C) const {
+  double c1 = C[n * N + tour[n].u];
+  double c2 = C[n * N + tour[n].v];
+  return c1 > c2 ? vector<vertex>{tour[n].u, tour[n].v}
+                 : vector<vertex>{tour[n].v, tour[n].u};
 }
 
 std::string Tour::toString() const {
@@ -128,16 +135,20 @@ vector<vertex> Tour::toVector() const {
 
 double Tour::getObjVal() const { return cost; }
 
-unordered_set<Edge, Edge::Hash>* Tour::edgeSet() const {
-  unordered_set<Edge, Edge::Hash>* edges = new unordered_set<Edge, Edge::Hash>;
+unordered_set<Pair, Pair::Hash>* Tour::edgeSet() const {
+  unordered_set<Pair, Pair::Hash>* edges = new unordered_set<Pair, Pair::Hash>;
   for (unsigned int i = 0; i < N; ++i) {
-    edges->insert(Edge(i, tour[i].u));
-    edges->insert(Edge(i, tour[i].v));
+    edges->insert(Pair(i, tour[i].u));
+    edges->insert(Pair(i, tour[i].v));
   }
   return edges;
 }
 
-// Tour::Iterator::Iterator(vector<Node>::iterator p) : ptr(p) {}
+bool Tour::operator==(const Tour& t) const {
+  return N == t.N && cost == t.cost && tour == t.tour;
+}
+
+// Tour::Iterator::Iterator(vector<Pair>::iterator p) : ptr(p) {}
 // bool Tour::Iterator::operator!=(const Iterator& o) const {
 //   return ptr != o.ptr;
 // }
@@ -146,7 +157,7 @@ unordered_set<Edge, Edge::Hash>* Tour::edgeSet() const {
 //   ++ptr;
 //   return *this;
 // }
-// const Node& Tour::Iterator::operator*() const { return *ptr; }
+// const Pair& Tour::Iterator::operator*() const { return *ptr; }
 
-// Tour::Iterator Tour::begin() { return Tour::Iterator(Nodes.begin()); };
-// Tour::Iterator Tour::end() { return Tour::Iterator(Nodes.end()); };
+// Tour::Iterator Tour::begin() { return Tour::Iterator(Pairs.begin()); };
+// Tour::Iterator Tour::end() { return Tour::Iterator(Pairs.end()); };

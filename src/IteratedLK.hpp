@@ -9,7 +9,7 @@ struct TSPsolution;
 struct Params;
 typedef unsigned int vertex;
 
-Tour* createTour(std::vector<vertex>, const double*, const bool);
+Tour createTour(std::vector<vertex>, const double*, const bool);
 
 std::vector<vertex>* naiveTour(const unsigned int);
 

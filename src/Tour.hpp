@@ -5,46 +5,38 @@
 #include <unordered_set>
 #include <vector>
 
-#include "datatypes.hpp"
+#include "Pair.hpp"
 
 typedef unsigned int vertex;
 
 class Tour {
  private:
   unsigned int N;
-  std::vector<Node> tour;
+  std::vector<Pair> tour;
   double cost;
 
-  static void connect(std::vector<Node>&, const std::vector<vertex>&,
+  static void connect(std::vector<Pair>&, const std::vector<vertex>&,
                       unsigned int);
-  static void disconnect(std::vector<Node>&, const std::vector<vertex>&,
+  static void disconnect(std::vector<Pair>&, const std::vector<vertex>&,
                          unsigned int);
 
  public:
-  // class Iterator {
-  //   std::vector<Node>::iterator ptr;
-
-  //  public:
-  //   Iterator(std::vector<Node>::iterator);
-  //   Iterator operator++();
-  //   bool operator!=(const Iterator&) const;
-  //   const Node& operator*() const;
+  // class Hash {
+  //   static void hash_combine(std::size_t& seed, const vertex& v);
+  //   std::size_t operator()(std::vector<Pair> const&) const;
   // };
 
-  // Iterator begin();
-  // Iterator end();
-
-  Tour(unsigned int, const std::vector<Node>& = std::vector<Node>(),
+  Tour(unsigned int, const std::vector<Pair>& = std::vector<Pair>(),
        const double = 0.0);
 
-  std::pair<bool, std::vector<Node>> generate(const std::vector<vertex>&) const;
+  static std::pair<bool, Tour> generate(const Tour&, const std::vector<vertex>&,
+                                        const double);
 
-  void update(const std::vector<Node>, const double);
+  std::vector<vertex> around(const vertex&, const double*) const;
 
-  std::vector<vertex> around(const vertex&) const;
+  std::unordered_set<Pair, Pair::Hash>* edgeSet() const;
 
-  std::unordered_set<Edge, Edge::Hash>* edgeSet() const;
-
+  bool operator==(const Tour&) const;
   std::string toString() const;
   std::vector<vertex> toVector() const;
   double getObjVal() const;

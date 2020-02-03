@@ -1,4 +1,5 @@
 #include "LK.hpp"
+#include "Pair.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 
@@ -10,10 +11,6 @@ using std::unordered_set;
 using std::vector;
 
 // TOCHECK: intensification. keep track of common edges. Should work
-// TODO: 4-opt trials when a solution is found (nonsequential)
-// TODO: random restart
-// TODO: put a max K value, or just consider max complexity
-// TODO: check scope of pointer values (for leaks)
 
 /**
  * Build Lin-Kernighan heuristic solver
@@ -26,9 +23,8 @@ using std::vector;
  * @param int_depth minimum depth to apply intensification
  * @param int_sols minimum number of solutions before applying intensification
  */
-LK::LK(unsigned int N, const double* C, const Tour& t)
-    : N(N), C(C), G(0.0), good_edges(nullptr), intensify(false) {
-  solutions.push_back(t);
+LK::LK(unsigned int N, const double* C, vector<Tour>& vt)
+    : N(N), C(C), solutions(vt), G(0.0), good_edges(nullptr), intensify(false) {
   if (P.max_neighbours == 0) P.max_neighbours = N - 3;
 }
 
@@ -58,39 +54,39 @@ bool LK::joined(const vector<vertex>& L, const vertex& a, const vertex& b) {
  */
 void LK::updateGoodEdges(const vector<vertex>& L) {
   for (unsigned int i = 0; i < L.size() - 1; i += 2) {
-    Edge e(L[i], L[i + 1]);
+    Pair e(L[i], L[i + 1]);
     good_edges->erase(e);
   }
 }
 
 void LK::solve() {
   bool improved = true;
-  // int i = 0;
-  while (improved) {
+  unsigned int i = 0;
+  while (improved && i < P.I) {
     // Reset gain
     G = 0.0;
     // Take last improved solution
     Tour current = solutions.back();
     // Improve the current solution with LK
     improved = improve(current);
-    // std::cout << i << " - improved: " << improved << std::endl;
+    std::cout << i << " - improved: " << improved << std::endl;
     // Save improved solution
     solutions.push_back(current);
+    i++;
     // If we obtained some local optima, start intensification
-    // i++;
-    if (solutions.size() > P.intens_min_sols) intensify = true;
+    if (i > P.intens_min_sols) intensify = true;
   }
-  // Stop, since no run improved the gain
+  // Stop, since no run improved the gain or max number of iterations reached
 }
 
 bool LK::improve(Tour& tour) {
   for (vertex t1 = 0; t1 < N; ++t1) {
-    vector<vertex> around = tour.around(t1);
+    vector<vertex> around = tour.around(t1, C);
     for (const vertex& t2 : around) {
       // Start by removing edge (t1, t2) = x1
       // If it is a good edge then stop and try the other neighbour
       bool removable = !intensify || 1 < P.intens_min_depth || !good_edges ||
-                       good_edges->find(Edge(t1, t2)) == good_edges->end();
+                       good_edges->find(Pair(t1, t2)) == good_edges->end();
       if (!removable) continue;
 
       // Remove (t1, t2)
@@ -154,7 +150,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
     double gi = gain - C[t2i * N + n];
     // Check if n is around t2i in tour, if (t2i, n) was already deleted and put
     // in X
-    vector<vertex> ar_t2i = tour.around(t2i);
+    vector<vertex> ar_t2i = tour.around(t2i, C);
     if (n != ar_t2i[0] && n != ar_t2i[1] && n != t2i && n != t1 &&
         !joined(L, t2i, n) && gi > 0) {
       // TOCHECK: I removed !X (!broken) because n is not around t2i so it
@@ -163,7 +159,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
       // (t2i, n) Whole point of this subsequent part is ranking the
       // possible neighbours (t_2i+1), by seeing the potential gain they
       // could allow by removing the next edge
-      vector<vertex> around_n = tour.around(n);
+      vector<vertex> around_n = tour.around(n, C);
       // NOTE: This set of nodes can't contain t2i, since n was not around t2i
       // For each of the two possible edges to remove
       for (const vertex& succ_n : around_n) {
@@ -172,7 +168,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
         // not a good edge
         bool removable = !intensify || i + 1 < P.intens_min_depth ||
                          !good_edges ||
-                         good_edges->find(Edge(n, succ_n)) == good_edges->end();
+                         good_edges->find(Pair(n, succ_n)) == good_edges->end();
         if (!broken(L, n, succ_n) && removable) {
           // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
@@ -201,83 +197,96 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
 
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
                  vector<vertex>& L, const unsigned int i) {
-  // TODO: this function could be rewritten better
-  vector<vertex> around_lasty = tour.around(lasty);
+  unsigned int backtraking_threshold = 2;
+  vector<vertex> around_lasty = tour.around(lasty, C);
+  bool improvedx = false;
+  bool try_both_neighbours = false;
+  bool stop = false;
+
   // For each of the two neighbours of lasty
-  for (const vertex& t2i : around_lasty) {
+  for (unsigned int j = 0; j < around_lasty.size() && !stop; ++j) {
+    vertex t2i = around_lasty[j];
     // Consider removing edge (lasty, t2i)
     double gi = gain + C[lasty * N + t2i];
 
     bool removable = !intensify || i < P.intens_min_depth || !good_edges ||
-                     good_edges->find(Edge(lasty, t2i)) == good_edges->end();
+                     good_edges->find(Pair(lasty, t2i)) == good_edges->end();
     if (t2i != t1 && !broken(L, lasty, t2i) && removable) {
-      // TOCHECK: removed !Y[lasty * N + t2i]. A tour edge cannot have been
-      // joined
+      // TOCHECK: removed !Y[lasty * N + t2i]
 
       // Remove edge (lasty, t2i)
       L.push_back(t2i);
 
-      // Relink to t1 adding edge (t2i, t1)
-      L.push_back(t1);
+      if (try_both_neighbours) {
+        //"try_both_neighbours" implies previous choice was a tour.
+        improvedx = chooseY(tour, t1, t2i, gi, L, i);
+        // Neighbour has been tried
+        try_both_neighbours = false;
+        stop = true;
+      } else {
+        // Relink to t1 adding edge (t2i, t1)
+        L.push_back(t1);
 
-      // Gain by relinking (adding edge (t2i, t1))
-      double relink_gain = gi - C[t2i * N + t1];
+        // Gain by relinking (adding edge (t2i, t1))
+        double relink_gain = gi - C[t2i * N + t1];
 
-      // Check to see if L_relink forms a valid tour
-      pair<bool, vector<Node>> is_tour = tour.generate(L);
+        // Check to see if L_relink forms a valid tour
+        auto [is_tour, new_tour] = Tour::generate(tour, L, relink_gain);
 
-      // Remove edge (t2i, t1), since we want to continue improving, if possible
-      L.pop_back();
+        // Remove edge (t2i, t1), since we want to continue improving, if
+        // possible
+        L.pop_back();  // remove t1
 
-      // If L_relink is a valid tour
-      if (is_tour.first) {
-        // If gain is better found so far
-        if (relink_gain > G) {
-          // Save best improvement so far
-          G = relink_gain;
-          // Go on improving if i <= K, otherwise stop
-          if (i > P.K || !chooseY(tour, t1, t2i, gi, L, i)) {
-            // Save new tour with relink
-            tour.update(is_tour.second, relink_gain);
-            // Update set of good edges with currently added and removed edges
-            // NOTE: adding (t2i, t1) is not necessary
-            if (good_edges == nullptr)
-              // Set with edges of first improved tour (1st iteration)
-              good_edges = tour.edgeSet();
-            else
-              updateGoodEdges(L);
+        if (is_tour) {
+          bool found = std::find(solutions.begin(), solutions.end(),
+                                 new_tour) != solutions.end();
+          if (found) {
+            // Tour already present -> always stop
+            improvedx = false;
+            stop = true;
+          } else if (relink_gain > G) {
+            // Tour is actually a new improving solution
+            G = relink_gain;
+            if (i > P.K || !chooseY(tour, t1, t2i, gi, L, i)) {
+              // If it cannot improve further
+              // Replace it with new improving tour
+              tour = new_tour;
+              // Update set of good edges with current alternating path
+              // NOTE: adding (t2i, t1) is not necessary (since it is an added
+              // edge, while the procedure only cares about removed edges)
+              if (good_edges == nullptr)
+                // Set with edges of first improved tour (1st iteration)
+                good_edges = tour.edgeSet();
+              else
+                updateGoodEdges(L);
+            }
+            // either chooseY or new_tour improved
+            improvedx = true;
+            stop = true;
+          } else if (i <= backtraking_threshold) {
+            // Try to go see if it becomes a gainful tour later on
+            improvedx = chooseY(tour, t1, t2i, gi, L, i);
+            if (!improvedx) {
+              // No improvement from going on with current tour, so let's try
+              // other neighbour (in this case stop will be == false)
+              try_both_neighbours = true;
+              // Add to vector the other possibility for t2i
+              if (j == 1) around_lasty.push_back(around_lasty[0]);
+            } else
+              stop = true;  // improved
+          } else {
+            // if it is a tour not seen before but with bad gain and no
+            // backtraking is allowed
+            improvedx = false;
+            stop = true;  // no point into going on since it will not be a tour
           }
-          // Improvement found, restart
-          return true;
-        } else if (i <= 2) {
-          // Limited backtracking if i == 2
-          // Try to see if it is possible to ge a gainful tour later
-          if (chooseY(tour, t1, t2i, gi, L, i)) return true;
-          // If not, try the other node, which cannot relink with t1
-          vertex alt_t2i =
-              (t2i == around_lasty[0]) ? around_lasty[1] : around_lasty[0];
-          double alt_gi = gain + C[lasty * N + alt_t2i];
-          if (alt_t2i != t1 && !broken(L, lasty, alt_t2i)) {
-            // Remove t2i
-            L.pop_back();
-            // Replace it with alt_t2i
-            L.push_back(alt_t2i);
-            if (chooseY(tour, t1, alt_t2i, alt_gi, L, i)) return true;
-          }
-        }
-        // No improvement over previous gain G (relink_gain <= G) & trying other
-        // neighbour didn't succeed, or was not possible (i > 2), then terminate
-        // choice of x_i and exit loop
-        L.pop_back();  // Remove t2i or alt_t2i
-        break;
+        }  // if tour
+        // If it's not a tour try other neighbour
       }
-      // If tour is not valid try the other neighbour
-      L.pop_back();  // remove t2i
-    }
-    // else try the other neighbour of lasty
-  }
-  // No edge can be removed. Search other starting edge
-  return false;
+      if (!improvedx) L.pop_back();  // remove t2i
+    }                                // if
+  }                                  // for
+  return improvedx;
 }
 
 bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
@@ -303,8 +312,8 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
 }
 
 const TSPsolution LK::getSolution() const {
-  // TODO: maybe I can avoid passing both string and vector. I could also use
-  // python to plit the string
+  // TODO: maybe I can avoid passing both string and vector. I could also
+  // use python to plit the string
   Tour final_tour = solutions.back();
   return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
                      final_tour.toString(), final_tour.toVector());

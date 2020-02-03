@@ -71,6 +71,14 @@ void plot_times(const vector<pair<unsigned int, double>>& opti,
   // Call plot function
   PyObject* fun = PyObject_CallFunctionObjArgs(
       pFunc, py_opt_times, py_heur_times, py_title, py_fname, NULL);
+
+  Py_DECREF(fun);
+  Py_DECREF(py_fname);
+  Py_DECREF(py_title);
+  Py_DECREF(pFunc);
+  Py_DECREF(pModule);
+  Py_DECREF(py_heur_times);
+  Py_DECREF(py_opt_times);
 }
 
 void plot_objvalues(const vector<pair<unsigned int, double>>& opti,
@@ -114,6 +122,14 @@ void plot_objvalues(const vector<pair<unsigned int, double>>& opti,
   // Call plot function
   PyObject* fun = PyObject_CallFunctionObjArgs(pFunc, py_opt_val, py_heur_val,
                                                py_title, py_fname, NULL);
+
+  Py_DECREF(fun);
+  Py_DECREF(py_fname);
+  Py_DECREF(py_title);
+  Py_DECREF(pFunc);
+  Py_DECREF(pModule);
+  Py_DECREF(py_heur_val);
+  Py_DECREF(py_opt_val);
 }
 
 void plot_points(const vector<pair<double, double>>& coord,
@@ -151,6 +167,13 @@ void plot_points(const vector<pair<double, double>>& coord,
   // Call plot function
   PyObject* fun =
       PyObject_CallFunctionObjArgs(pFunc, py_coord, py_path, py_fname, NULL);
+
+  Py_DECREF(fun);
+  Py_DECREF(py_fname);
+  Py_DECREF(pFunc);
+  Py_DECREF(pModule);
+  Py_DECREF(py_path);
+  Py_DECREF(py_coord);
 }
 
 #endif /* PYTHON_ADAPTER */

@@ -16,7 +16,7 @@ def plotTimes(opt_times, heur_times, title, filename):
     """
 
     if filename:
-        print("Generazione grafico con tempi di esecuzione nella cartella plots/")
+        print("Generating execution time plot in folder plots/")
 
     plt.clf()
     opt_times.sort(key=lambda x: x[0])
@@ -55,7 +55,7 @@ def plotError(opt_value, heur_value, title, filename):
     """
 
     if filename:
-        print("Generazione grafico sull'errore nella cartella plots/")
+        print("Generating error plot in folder plots/")
 
     plt.clf()
 
@@ -66,16 +66,21 @@ def plotError(opt_value, heur_value, title, filename):
 
     plt.xticks(N_opt, N_opt)
 
-    plt.plot(N_opt, v_opt, linestyle='--', marker='o', color='blue',
-             label='CPLEX optimal')
-    plt.plot(N_heur, v_heur, linestyle='--', marker='o', color='red',
-             label='Lin-Keringhan heuristic')
+    # plt.plot(N_opt, v_opt, linestyle='--', marker='o', color='blue',
+    #          label='CPLEX optimal')
+    # plt.plot(N_heur, v_heur, linestyle='--', marker='o', color='red',
+    #          label='Lin-Keringhan heuristic')
 
-    errors = zip(N_heur, v_heur, v_opt)
-    for x, y, opt in errors:
-        err = abs(y - opt) / opt * 100
-        plt.annotate(("%.3f" % err) + " %", xy=(x, y),
-                     xytext=(-10, 10), textcoords="offset points")
+    errors = list()
+    valtoplot = zip(N_heur, v_heur, v_opt)
+    for n, approx, opt in valtoplot:
+        err = abs(approx - opt) / opt * 100
+        errors.append(err)
+        plt.annotate(("%.3f" % err), xy=(n, err), rotation=45,
+                     xytext=(0, 20), ha='center', textcoords="offset points")
+
+    plt.plot(N_opt, errors, linestyle='--', marker='o',
+             color='red', label='Heuristic relative error (%)')
 
     plt.title(title)
     plt.legend()
@@ -99,7 +104,7 @@ def plotPath(coords, tour=[], filename=""):
     """
 
     if filename:
-        print("Generazione immagine delle coordinate nella cartella plots/")
+        print("Generating tour image in folder plots/")
 
     n = len(coords)
     plt.clf()

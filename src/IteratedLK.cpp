@@ -1,9 +1,9 @@
 #include "IteratedLK.hpp"
 #include "LK.hpp"
+#include "Pair.hpp"
 #include "Params.cpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
-#include "datatypes.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -59,9 +59,9 @@ vector<vertex>* nearestNeighbour(const double* C, const unsigned int N) {
  * @param atour vertices in the tour (order matters)
  * @param C cost matrix
  * @param permute if true a random permutation of the provided tour is returned
- * @return pointer to Tour object
+ * @return Tour object
  */
-Tour* createTour(vector<vertex> atour, const double* C, const bool permute) {
+Tour createTour(vector<vertex> atour, const double* C, const bool permute) {
   const unsigned int N = atour.size();
 
   if (permute) {
@@ -70,14 +70,14 @@ Tour* createTour(vector<vertex> atour, const double* C, const bool permute) {
     std::shuffle(atour.begin(), atour.end(), re);
   }
 
-  vector<Node> t(N);
-  t[atour[0]] = Node(atour[N - 1], atour[1]);
+  vector<Pair> t(N);
+  t[atour[0]] = Pair(atour[N - 1], atour[1]);
   double cost = C[atour[N - 1] * N + atour[0]] + C[atour[0] * N + atour[1]];
   for (vertex i = 1; i < N - 1; cost += C[atour[i] * N + atour[i + 1]], ++i)
-    t[atour[i]] = Node(atour[i - 1], atour[i + 1]);
-  t[atour[N - 1]] = Node(atour[N - 2], atour[0]);
+    t[atour[i]] = Pair(atour[i - 1], atour[i + 1]);
+  t[atour[N - 1]] = Pair(atour[N - 2], atour[0]);
 
-  return new Tour(N, t, cost);
+  return Tour(N, t, cost);
 }
 
 /**
@@ -85,21 +85,23 @@ Tour* createTour(vector<vertex> atour, const double* C, const bool permute) {
  * @param N number of vertices
  * @param C cost matrix
  * @param log stream where to log iterations
- * @return pair with solution object and objective value (cost of solution)
+ * @return pair with solution object and total execution time
  */
 pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
                                       const double* C, ofstream& log) {
-  // vector<vertex>* tour0 = naiveTour(N);
-  vector<vertex>* tour0 = nearestNeighbour(C, N);
+  vector<vertex>* tour0 = naiveTour(N);
+  // vector<vertex>* tour0 = nearestNeighbour(C, N);
   double tot_seconds = 0.0, part_seconds = 0.0;
   log << "*** ITERATION OF LIN-KERNIGHAN HEURISTIC ***\n";
   TSPsolution best(-1, 0, nullptr);
+  vector<Tour> exploredSolutions;
   // First tour generated with nearest neighbour
-  Tour* tour = createTour(*tour0, C, false);
   for (unsigned int i = 0; i < P.LK_iterations;
        ++i, tot_seconds += part_seconds) {
+    // Create a new permutation of current tour and add to solutions
+    exploredSolutions.push_back(std::move(createTour(*tour0, C, true)));
     log << "Iteration " << i + 1 << "/" << P.LK_iterations << "\n";
-    LK heur(N, C, *tour);
+    LK heur(N, C, exploredSolutions);
     auto start = std::chrono::system_clock::now();
     heur.solve();
     auto end = std::chrono::system_clock::now();
@@ -107,11 +109,7 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
     TSPsolution sol = heur.getSolution();
     if (best.objVal == -1 || sol.objVal < best.objVal) best = sol;
     log << "Solved in: " << part_seconds << " sec\n" << sol;
-    // Create a new permutation of current tour
-    delete tour;
-    tour = createTour(*tour0, C, true);
   }
   delete tour0;
-  // delete tour0;
   return {best, tot_seconds};
 }
