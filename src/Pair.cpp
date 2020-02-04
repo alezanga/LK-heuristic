@@ -1,11 +1,21 @@
 #include "Pair.hpp"
 
-Pair::Pair(const vertex& a, const vertex& b) : u(a), v(b) {}
+using std::pair;
 
-bool Pair::operator==(const Pair& o) const {
-  return (v == o.v && u == o.u) || (v == o.u && u == o.v);
+Pair::Pair(const vertex& a, const vertex& b) {
+  if (a < b)
+    p = pair<vertex, vertex>(a, b);
+  else
+    p = pair<vertex, vertex>(b, a);
 }
 
-std::size_t Pair::Hash::operator()(const Pair& e) const {
-  return std::hash<vertex>()(e.u) ^ std::hash<vertex>()(e.v);
-}
+const vertex& Pair::u() const { return p.first; }
+const vertex& Pair::v() const { return p.second; }
+
+bool Pair::operator==(const Pair& o) const { return p == o.p; }
+
+bool Pair::operator<(const Pair& o) const { return p < o.p; }
+
+// std::size_t Pair::Hash::operator()(const Pair& e) const {
+//   return std::hash<vertex>()(e.u()) ^ std::hash<vertex>()(e.v());
+// }

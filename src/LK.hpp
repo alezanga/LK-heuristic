@@ -1,28 +1,34 @@
 #ifndef LIN_K
 #define LIN_K
 
-#include <unordered_set>
+#include <set>
 #include <vector>
 
-#include "Pair.hpp"
 #include "Params.cpp"
 
 struct Tour;
+struct Pair;
 struct TSPsolution;
+
+typedef unsigned int vertex;
+typedef std::vector<std::pair<std::set<Pair>, double>> heap_set;
 
 class LK {
  private:
   unsigned int N;
   const double* C;
-  std::vector<Tour>& solutions;
+  std::set<Tour>& solutions;
+  std::set<Tour>::iterator current_it;
   double G;
-  std::unordered_set<Pair, Pair::Hash>* good_edges;
+  // A maxheap with best T tours, and sorted vector with their intersection
+  std::pair<heap_set, std::vector<Pair>> good_edges;
   bool intensify;
   Params P;
 
   static bool broken(const std::vector<vertex>&, const vertex&, const vertex&);
   static bool joined(const std::vector<vertex>&, const vertex&, const vertex&);
-  void updateGoodEdges(const std::vector<vertex>&);
+  void intersectGoodEdges();
+  void updateGoodEdges(const Tour&);
 
   std::vector<vertex> neighbourhood(const vertex&, const vertex&, double,
                                     const Tour&, const std::vector<vertex>&,
@@ -59,8 +65,8 @@ class LK {
    * @param int_depth minimum depth to apply intensification
    * @param int_sols minimum number of solutions before applying intensification
    */
-  LK(unsigned int, const double*, std::vector<Tour>&);
-  ~LK();
+  LK(unsigned int, const double*, std::set<Tour>&,
+     const std::set<Tour>::iterator&);
   void solve();
   const TSPsolution getSolution() const;
 };

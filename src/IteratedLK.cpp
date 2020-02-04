@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <set>
 
 using std::ofstream;
 using std::pair;
+using std::set;
 using std::vector;
 
 // TODO: do something for duplicate solutions and early stop if solution and obj
@@ -94,14 +96,14 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
   double tot_seconds = 0.0, part_seconds = 0.0;
   log << "*** ITERATION OF LIN-KERNIGHAN HEURISTIC ***\n";
   TSPsolution best(-1, 0, nullptr);
-  vector<Tour> exploredSolutions;
+  set<Tour> exploredSolutions;
   // First tour generated with nearest neighbour
   for (unsigned int i = 0; i < P.LK_iterations;
        ++i, tot_seconds += part_seconds) {
     // Create a new permutation of current tour and add to solutions
-    exploredSolutions.push_back(std::move(createTour(*tour0, C, true)));
+    auto pit = exploredSolutions.insert(std::move(createTour(*tour0, C, true)));
     log << "Iteration " << i + 1 << "/" << P.LK_iterations << "\n";
-    LK heur(N, C, exploredSolutions);
+    LK heur(N, C, exploredSolutions, pit.first);
     auto start = std::chrono::system_clock::now();
     heur.solve();
     auto end = std::chrono::system_clock::now();

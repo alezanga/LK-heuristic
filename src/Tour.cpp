@@ -1,9 +1,10 @@
 #include "Tour.hpp"
-#include "Pair.hpp"
 
 #include <assert.h>
+#include <unordered_set>
 
 using std::pair;
+using std::set;
 using std::unordered_set;
 using std::vector;
 
@@ -20,12 +21,12 @@ Tour::Tour(unsigned int N, const vector<Pair>& ed, const double c)
 void Tour::disconnect(vector<Pair>& T, const vector<vertex>& L,
                       unsigned int i) {
   if (i == L.size() - 1) return;
-  assert(T[L[i]].u == L[i + 1] || T[L[i]].v == L[i + 1]);
+  assert(T[L[i]].u() == L[i + 1] || T[L[i]].v() == L[i + 1]);
   // Disconnect from successor, and replace it with predecessor
-  if (T[L[i]].u == L[i + 1])
-    T[L[i]].u = (i > 0) ? L[i - 1] : L[L.size() - 2];
+  if (T[L[i]].u() == L[i + 1])
+    T[L[i]] = Pair((i > 0) ? L[i - 1] : L[L.size() - 2], T[L[i]].v());
   else
-    T[L[i]].v = (i > 0) ? L[i - 1] : L[L.size() - 2];
+    T[L[i]] = Pair((i > 0) ? L[i - 1] : L[L.size() - 2], T[L[i]].u());
   connect(T, L, i + 1);
 }
 
@@ -37,12 +38,12 @@ void Tour::disconnect(vector<Pair>& T, const vector<vertex>& L,
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
  */
 void Tour::connect(vector<Pair>& T, const vector<vertex>& L, unsigned int i) {
-  assert(T[L[i]].u == L[i - 1] || T[L[i]].v == L[i - 1]);
+  assert(T[L[i]].u() == L[i - 1] || T[L[i]].v() == L[i - 1]);
   // Connect to successor, and remove reference to predecessor
-  if (T[L[i]].u == L[i - 1])
-    T[L[i]].u = L[i + 1];
+  if (T[L[i]].u() == L[i - 1])
+    T[L[i]] = Pair(L[i + 1], T[L[i]].v());
   else
-    T[L[i]].v = L[i + 1];
+    T[L[i]] = Pair(L[i + 1], T[L[i]].u());
   disconnect(T, L, i + 1);
 }
 
@@ -76,7 +77,8 @@ pair<bool, Tour> Tour::generate(const Tour& tour, const vector<vertex>& L,
   std::unordered_set<vertex> encountered;
   vertex n = 0, pred = -1;
   while (encountered.insert(n).second) {
-    vertex succ = (tour_copy[n].u == pred) ? tour_copy[n].v : tour_copy[n].u;
+    vertex succ =
+        (tour_copy[n].u() == pred) ? tour_copy[n].v() : tour_copy[n].u();
     pred = n;
     n = succ;
   }
@@ -97,23 +99,23 @@ pair<bool, Tour> Tour::generate(const Tour& tour, const vector<vertex>& L,
  * @return vector of two elements
  */
 vector<vertex> Tour::around(const vertex& n, const double* C) const {
-  double c1 = C[n * N + tour[n].u];
-  double c2 = C[n * N + tour[n].v];
-  return c1 > c2 ? vector<vertex>{tour[n].u, tour[n].v}
-                 : vector<vertex>{tour[n].v, tour[n].u};
+  double c1 = C[n * N + tour[n].u()];
+  double c2 = C[n * N + tour[n].v()];
+  return c1 > c2 ? vector<vertex>{tour[n].u(), tour[n].v()}
+                 : vector<vertex>{tour[n].v(), tour[n].u()};
 }
 
 std::string Tour::toString() const {
   std::string s_tour = "";
   vertex i = 0;
-  std::unordered_set<int> visited;
+  std::unordered_set<vertex> visited;
   while (visited.size() < N) {
     s_tour += std::to_string(i) + " ";
     visited.insert(i);
-    if (visited.find(tour[i].u) != visited.end())
-      i = tour[i].v;
+    if (visited.find(tour[i].u()) != visited.end())
+      i = tour[i].v();
     else
-      i = tour[i].u;
+      i = tour[i].u();
   }
   return s_tour;
 }
@@ -121,25 +123,25 @@ std::string Tour::toString() const {
 vector<vertex> Tour::toVector() const {
   vector<vertex> v;
   vertex i = 0;
-  std::unordered_set<int> visited;
+  std::unordered_set<vertex> visited;
   while (visited.size() < N) {
     v.push_back(i);
     visited.insert(i);
-    if (visited.find(tour[i].u) != visited.end())
-      i = tour[i].v;
+    if (visited.find(tour[i].u()) != visited.end())
+      i = tour[i].v();
     else
-      i = tour[i].u;
+      i = tour[i].u();
   }
   return v;
 }
 
 double Tour::getObjVal() const { return cost; }
 
-unordered_set<Pair, Pair::Hash>* Tour::edgeSet() const {
-  unordered_set<Pair, Pair::Hash>* edges = new unordered_set<Pair, Pair::Hash>;
+set<Pair> Tour::edgeSet() const {
+  set<Pair> edges;
   for (unsigned int i = 0; i < N; ++i) {
-    edges->insert(Pair(i, tour[i].u));
-    edges->insert(Pair(i, tour[i].v));
+    edges.insert(Pair(i, tour[i].u()));
+    edges.insert(Pair(i, tour[i].v()));
   }
   return edges;
 }
@@ -147,6 +149,12 @@ unordered_set<Pair, Pair::Hash>* Tour::edgeSet() const {
 bool Tour::operator==(const Tour& t) const {
   return N == t.N && cost == t.cost && tour == t.tour;
 }
+
+/**
+ * Returns whether this tour is better (cheaper) than the other.
+ * The comparison doesn't make sense if the two tours are of different sizes.
+ */
+bool Tour::operator<(const Tour& t) const { return N == t.N && cost < t.cost; }
 
 // Tour::Iterator::Iterator(vector<Pair>::iterator p) : ptr(p) {}
 // bool Tour::Iterator::operator!=(const Iterator& o) const {

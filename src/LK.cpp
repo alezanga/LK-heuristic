@@ -3,14 +3,77 @@
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 
+#include <assert.h>
 #include <algorithm>
 #include <limits>
+#include <set>
 
 using std::pair;
-using std::unordered_set;
+using std::set;
 using std::vector;
 
 // TOCHECK: intensification. keep track of common edges. Should work
+
+/**
+ * Compute intersection of all set in good_edges. Then replace good_edges.second
+ * with the new intersection.
+ */
+void LK::intersectGoodEdges() {
+  // Update intersection
+  good_edges.second.clear();
+  vector<pair<set<Pair>, double>>::const_iterator it =
+      good_edges.first.cbegin();
+  // Work with vectors for more efficiency
+  vector<Pair> last_intersection(it->first.cbegin(), it->first.cend());
+  vector<Pair> tmp;
+  for (; it != good_edges.first.cend(); it++) {
+    const auto& [edgeset, _c] = *it;
+    (void)_c;  // unused variable
+    std::set_intersection(edgeset.begin(), edgeset.end(),
+                          last_intersection.begin(), last_intersection.end(),
+                          std::back_inserter(tmp));
+    std::swap(last_intersection, tmp);
+    tmp.clear();
+  }
+  good_edges.second = last_intersection;
+}
+
+/**
+ * Update the heap of best tours if necessary and update the intersection of
+ * their edges.
+ * @param newTour the newly generated tour
+ */
+void LK::updateGoodEdges(const Tour& newTour) {
+  if (good_edges.first.empty())
+    good_edges.first.push_back(
+        {std::move(newTour.edgeSet()), newTour.getObjVal()});
+  // goodEdges.first is a maxheap, so tour of highest cost is at position 0
+  else {
+    auto less = [](const pair<set<Pair>, double>& a,
+                   const pair<set<Pair>, double>& b) {
+      return a.second < b.second;
+    };
+    if (good_edges.first.size() < P.intens_n_tours) {
+      good_edges.first.push_back(
+          {std::move(newTour.edgeSet()), newTour.getObjVal()});
+      std::push_heap(good_edges.first.begin(), good_edges.first.end(), less);
+    } else {
+      assert(good_edges.first.at(0).second > newTour.getObjVal());
+      // New best solution
+      // Pop worst tour in heap
+      std::pop_heap(good_edges.first.begin(), good_edges.first.end(), less);
+      good_edges.first.pop_back();
+      // Push the new one
+      good_edges.first.push_back(
+          {std::move(newTour.edgeSet()), newTour.getObjVal()});
+      std::push_heap(good_edges.first.begin(), good_edges.first.end(), less);
+
+      // Update intersection
+      if (intensify) intersectGoodEdges();
+    }
+    // else nothing to do
+  }
+}
 
 /**
  * Build Lin-Kernighan heuristic solver
@@ -23,13 +86,10 @@ using std::vector;
  * @param int_depth minimum depth to apply intensification
  * @param int_sols minimum number of solutions before applying intensification
  */
-LK::LK(unsigned int N, const double* C, vector<Tour>& vt)
-    : N(N), C(C), solutions(vt), G(0.0), good_edges(nullptr), intensify(false) {
+LK::LK(unsigned int N, const double* C, set<Tour>& vt,
+       const std::set<Tour>::iterator& curr)
+    : N(N), C(C), solutions(vt), current_it(curr), G(0.0), intensify(false) {
   if (P.max_neighbours == 0) P.max_neighbours = N - 3;
-}
-
-LK::~LK() {
-  if (good_edges) delete good_edges;
 }
 
 bool LK::broken(const vector<vertex>& L, const vertex& a, const vertex& b) {
@@ -47,18 +107,6 @@ bool LK::joined(const vector<vertex>& L, const vertex& a, const vertex& b) {
   return false;
 }
 
-/**
- * Intersect edges of current 'good_edges' set with newly broken edges.
- * Note that 'good_edges' must be initialized
- * @param L list of removed and added edges
- */
-void LK::updateGoodEdges(const vector<vertex>& L) {
-  for (unsigned int i = 0; i < L.size() - 1; i += 2) {
-    Pair e(L[i], L[i + 1]);
-    good_edges->erase(e);
-  }
-}
-
 void LK::solve() {
   bool improved = true;
   unsigned int i = 0;
@@ -66,15 +114,22 @@ void LK::solve() {
     // Reset gain
     G = 0.0;
     // Take last improved solution
-    Tour current = solutions.back();
+    Tour curr_tour = *current_it;
     // Improve the current solution with LK
-    improved = improve(current);
+    improved = improve(curr_tour);
     std::cout << i << " - improved: " << improved << std::endl;
     // Save improved solution
-    solutions.push_back(current);
+    auto [new_it, ins] = solutions.insert(curr_tour);
+    if (ins)
+      current_it = new_it;
+    else
+      break;  // Cannot happen, since every solution is improving
     i++;
-    // If we obtained some local optima, start intensification
-    if (i > P.intens_min_sols) intensify = true;
+    // If we obtained min number of local optima, start intensification
+    if (!intensify && i > P.intens_n_tours) {
+      intensify = true;
+      intersectGoodEdges();
+    }
   }
   // Stop, since no run improved the gain or max number of iterations reached
 }
@@ -85,8 +140,10 @@ bool LK::improve(Tour& tour) {
     for (const vertex& t2 : around) {
       // Start by removing edge (t1, t2) = x1
       // If it is a good edge then stop and try the other neighbour
-      bool removable = !intensify || 1 < P.intens_min_depth || !good_edges ||
-                       good_edges->find(Pair(t1, t2)) == good_edges->end();
+      bool removable =
+          !intensify || 1 < P.intens_min_depth ||
+          !std::binary_search(good_edges.second.cbegin(),
+                              good_edges.second.cend(), Pair(t1, t2));
       if (!removable) continue;
 
       // Remove (t1, t2)
@@ -166,9 +223,10 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
         // succ_n = t_2i+2, now search for a proper x_i+1
         // If (t_2i+1, t_2i+2) = (n, succ_n) has not been already broken and is
         // not a good edge
-        bool removable = !intensify || i + 1 < P.intens_min_depth ||
-                         !good_edges ||
-                         good_edges->find(Pair(n, succ_n)) == good_edges->end();
+        bool removable =
+            !intensify || i + 1 < P.intens_min_depth ||
+            !std::binary_search(good_edges.second.cbegin(),
+                                good_edges.second.cend(), Pair(n, succ_n));
         if (!broken(L, n, succ_n) && removable) {
           // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
@@ -209,8 +267,10 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
     // Consider removing edge (lasty, t2i)
     double gi = gain + C[lasty * N + t2i];
 
-    bool removable = !intensify || i < P.intens_min_depth || !good_edges ||
-                     good_edges->find(Pair(lasty, t2i)) == good_edges->end();
+    bool removable =
+        !intensify || i < P.intens_min_depth ||
+        !std::binary_search(good_edges.second.cbegin(),
+                            good_edges.second.cend(), Pair(lasty, t2i));
     if (t2i != t1 && !broken(L, lasty, t2i) && removable) {
       // TOCHECK: removed !Y[lasty * N + t2i]
 
@@ -238,8 +298,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
         L.pop_back();  // remove t1
 
         if (is_tour) {
-          bool found = std::find(solutions.begin(), solutions.end(),
-                                 new_tour) != solutions.end();
+          bool found = solutions.find(new_tour) != solutions.end();
           if (found) {
             // Tour already present -> always stop
             improvedx = false;
@@ -251,14 +310,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
               // If it cannot improve further
               // Replace it with new improving tour
               tour = new_tour;
-              // Update set of good edges with current alternating path
-              // NOTE: adding (t2i, t1) is not necessary (since it is an added
-              // edge, while the procedure only cares about removed edges)
-              if (good_edges == nullptr)
-                // Set with edges of first improved tour (1st iteration)
-                good_edges = tour.edgeSet();
-              else
-                updateGoodEdges(L);
+              updateGoodEdges(tour);
             }
             // either chooseY or new_tour improved
             improvedx = true;
@@ -314,7 +366,7 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
 const TSPsolution LK::getSolution() const {
   // TODO: maybe I can avoid passing both string and vector. I could also
   // use python to plit the string
-  Tour final_tour = solutions.back();
+  Tour final_tour = *current_it;
   return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
                      final_tour.toString(), final_tour.toVector());
 }

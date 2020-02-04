@@ -1,8 +1,8 @@
 #ifndef TOUR_H
 #define TOUR_H
 
+#include <set>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "Pair.hpp"
@@ -34,9 +34,10 @@ class Tour {
 
   std::vector<vertex> around(const vertex&, const double*) const;
 
-  std::unordered_set<Pair, Pair::Hash>* edgeSet() const;
+  std::set<Pair> edgeSet() const;
 
   bool operator==(const Tour&) const;
+  bool operator<(const Tour&) const;
   std::string toString() const;
   std::vector<vertex> toVector() const;
   double getObjVal() const;
