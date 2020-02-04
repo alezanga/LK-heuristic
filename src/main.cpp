@@ -13,8 +13,8 @@
 #include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
-#include "VariadicTable.hpp"
-#include "python_adapter.hpp"
+#include "utils/python_adapter.hpp"
+#include "utils/variadic_table.hpp"
 
 using std::cout;
 using std::pair;

@@ -4,7 +4,7 @@
 
 #include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
-#include "cpxmacro.hpp"
+#include "utils/cpxmacro.hpp"
 
 using std::string;
 using std::vector;

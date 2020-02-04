@@ -77,7 +77,7 @@ def plotError(opt_value, heur_value, title, filename):
         err = abs(approx - opt) / opt * 100
         errors.append(err)
         plt.annotate(("%.3f" % err), xy=(n, err), rotation=45,
-                     xytext=(0, 20), ha='center', textcoords="offset points")
+                     xytext=(0, 20), ha='center', textcoords='offset points', fontsize=7)
 
     plt.plot(N_opt, errors, linestyle='--', marker='o',
              color='red', label='Heuristic relative error (%)')
@@ -85,7 +85,7 @@ def plotError(opt_value, heur_value, title, filename):
     plt.title(title)
     plt.legend()
     plt.xlabel('Problem size (number of vertices)')
-    plt.ylabel('Objective value')
+    plt.ylabel('Objective value error')
     if filename:
         plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)
     else:
