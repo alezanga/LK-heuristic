@@ -9,10 +9,10 @@ typedef cpxenv* Env;
 typedef cpxlp* Prob;
 struct TSPsolution;
 
-struct TSPmodel {
+struct CplexModel {
  public:
-  TSPmodel(int, double*, const char = '/');
-  ~TSPmodel();
+  CplexModel(int, double*, const char = '/');
+  ~CplexModel();
   void solve() const;
   const TSPsolution getSolution() const;
 
@@ -21,8 +21,8 @@ struct TSPmodel {
   Prob lp;
   int n_var, N;
   double* C;
-  std::string* nameMap;
-  void setupLP(const char) const;
+  std::vector<std::string> nameMap;
+  void setupLP(const char);
 };
 
 #endif /*TSP_MODEL*/

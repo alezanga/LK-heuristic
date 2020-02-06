@@ -7,16 +7,17 @@
 #include <string>
 #include <vector>
 
+#include "CPLEX.hpp"
 #include "IteratedLK.hpp"
 #include "Params.cpp"
 #include "TSPinstance.hpp"
-#include "TSPmodel.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 #include "utils/python_adapter.hpp"
 #include "utils/variadic_table.hpp"
 
 using std::cout;
+using std::ofstream;
 using std::pair;
 using std::string;
 using std::vector;
@@ -24,6 +25,7 @@ namespace fs = std::experimental::filesystem;
 
 // Global vector with time threshold to visualize when finished
 vector<double> rangeThreshold = {0.1, 1, 10, 100};
+const std::vector<string> fileToRead{"d198.csv", "d657.csv"};
 
 /**
  * Returns int index corresponding to the range where 'time' belongs
@@ -34,6 +36,62 @@ unsigned int timeRange(double time) {
   return x;
 }
 
+/**
+ * Create instances and write them to csv
+ */
+void generateInstances(const Params& P) {
+  // Create dir and set path
+  fs::create_directory("instances");
+  fs::path insd = fs::current_path() / "instances";
+
+  unsigned int size = P.N_min;
+  TSPinstance coords;
+  while (size <= P.N_max) {
+    coords.generateRandomPolygons(size);
+    coords.saveToCsv((insd / "tsp_").string() + std::to_string(size));
+    size += P.N_incr;
+  }
+}
+
+pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
+                                       const TSPinstance& coords,
+                                       unsigned int N, ofstream& log_lk,
+                                       const PyWrapper& py) {
+  cout << "Solving with heuristic..." << std::endl;
+  // LK model
+  pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, log_lk);
+  log_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
+         << "Total time: " << lk_res.second << "\n"
+         << lk_res.first;
+  log_lk << "----------------------------------------------------\n"
+         << std::endl;
+
+  py.plot_points(*(coords.getPoints()), lk_res.first.vtour,
+                 "path_" + std::to_string(N));
+
+  return lk_res;
+}
+
+pair<TSPsolution, double> runOptimal(const Params& P, double* costs,
+                                     unsigned int N, ofstream& log_cplex) {
+  cout << "Solving with optimal algorithm..." << std::endl;
+  std::chrono::_V2::system_clock::time_point start, end;
+  double elapsed_seconds;
+  // Create CPLEX TSP problem with N holes
+  CplexModel mod = CplexModel(N, costs, fs::path::preferred_separator);
+  // Solve problem and measure time
+  start = std::chrono::system_clock::now();
+  mod.solve();
+  end = std::chrono::system_clock::now();
+  elapsed_seconds = std::chrono::duration<double>(end - start).count();
+  log_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
+  // Log solution to file and add element to display tables
+  TSPsolution cplex_res = mod.getSolution();
+  log_cplex << "Solved in: " << elapsed_seconds << " sec\n" << cplex_res;
+
+  return {cplex_res, elapsed_seconds};
+}
+
 void testTimes(const Params& P) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
@@ -42,13 +100,9 @@ void testTimes(const Params& P) {
   std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
   std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
 
-  const std::vector<string> fileToRead{"tsp_10.csv"};
-
   TSPinstance coords;
 
-  fs::create_directory("instances");
   fs::path insd = fs::current_path() / "instances";
-  unsigned int N = 0;
   try {
     // Declare tables to hold results
     VariadicTable<int, double> resultsTable(
@@ -63,103 +117,85 @@ void testTimes(const Params& P) {
     vector<pair<unsigned int, double>> heur_times;
     vector<pair<unsigned int, double>> heur_values;
 
-    initPython();     // Set up Python env variables and
-    Py_Initialize();  // Init Python interpreter
+    PyWrapper Py;
 
-    for (uint e = 0; e < P.max_iter && (!P.load_csv || dit != fs::end(dit));
-         ++e) {
-      std::chrono::_V2::system_clock::time_point start, end;
-      double elapsed_seconds;
+    pair<TSPsolution, double> solopt, solheur;
+    unsigned int N = 0;
 
-      // Loads/Create points
-      if (P.load_csv) {
-        string filename = dit->path().filename().string();
-        if (std::find(fileToRead.begin(), fileToRead.end(), filename) ==
-            fileToRead.end()) {
-          ++dit;
-          continue;
-        } else {
-          N = coords.loadFromCsv(dit->path().string());
-          cout << "Loaded file " << filename << std::endl;
-          ++dit;
-        }
-      } else {
-        N = P.N;
+    if (P.mode == fast) {
+      for (N = P.N_min; N <= P.N_max; N += P.N_incr) {
         coords.generateRandomPolygons(N);
-        if (P.save_csv)
-          coords.saveToCsv((insd / "tsp_").string() + std::to_string(N));
+        double* cost = coords.costMatrix();
+        if (P.solve_heur) solopt = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        if (P.solve_cplex) solheur = runOptimal(P, cost, N, sol_cplex);
+
+        heur_times.push_back({N, solheur.second});
+        heur_values.push_back({N, solheur.first.objVal});
+        cplex_times.push_back({N, solopt.second});
+        cplex_values.push_back({N, solopt.first.objVal});
+
+        cout << std::endl;
+
+        delete[] cost;
       }
+    } else if (P.mode == load) {
+      for (auto& file : fs::directory_iterator(insd)) {
+        string filename = file.path().filename().string();
+        if (std::find(fileToRead.begin(), fileToRead.end(), filename) ==
+            fileToRead.end())
+          continue;
+        // Load from file
+        N = coords.loadFromCsv(file.path().string());
+        double* cost = coords.costMatrix();
+        cout << "Loaded file " << filename << std::endl;
+        if (P.solve_heur) solopt = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        if (P.solve_cplex) solheur = runOptimal(P, cost, N, sol_cplex);
 
-      // Create cost matrix
-      double* costs = coords.costMatrix();
+        heur_times.push_back({N, solheur.second});
+        heur_values.push_back({N, solheur.first.objVal});
+        cplex_times.push_back({N, solopt.second});
+        cplex_values.push_back({N, solopt.first.objVal});
 
-      // LK model
-      pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, sol_lk);
-      sol_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
-             << "Total time: " << lk_res.second << "\n"
-             << lk_res.first;
-      sol_lk << "----------------------------------------------------\n"
-             << std::endl;
+        cout << std::endl;
 
-      plot_points(*(coords.getPoints()), lk_res.first.vtour,
-                  "path_" + std::to_string(N));
-
-      // Create CPLEX TSP problem with N holes
-      TSPmodel mod = TSPmodel(N, costs, fs::path::preferred_separator);
-      // Solve problem and measure time
-      start = std::chrono::system_clock::now();
-      mod.solve();
-      end = std::chrono::system_clock::now();
-      elapsed_seconds = std::chrono::duration<double>(end - start).count();
-      sol_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
-      // Log solution to file and add element to display tables
-      TSPsolution cplex_res = mod.getSolution();
-      sol_cplex << "Solved in: " << elapsed_seconds << " sec\n" << cplex_res;
-      resultsTable.addRow({N, elapsed_seconds});
-      rangeSize[timeRange(elapsed_seconds)] += string(" ") += std::to_string(N);
-
-      heur_times.push_back({N, lk_res.second});
-      heur_values.push_back({N, lk_res.first.objVal});
-      cplex_times.push_back({N, elapsed_seconds});
-      cplex_values.push_back({N, cplex_res.objVal});
-
-      // Increment
-      if (!P.load_csv) N += P.N_incr;
-      // Delete costs matrix
-      delete[] costs;
+        delete[] cost;
+      }
     }
 
     // Plot data with Python
-    plot_times(cplex_times, heur_times,
-               "Execution times for each problem size (N)", "times");
-    plot_objvalues(cplex_values, heur_values,
-                   "Objective values for problem size (N)", "values");
+    Py.plot_times(cplex_times, heur_times,
+                  "Execution times for each problem size (N)", "times");
+    Py.plot_objvalues(cplex_values, heur_values,
+                      "Objective values for problem size (N)", "values");
+  }
 
-    Py_Finalize();  // Undo all initializations and destroy the interpreter
+  // resultsTable.addRow({N, elapsed_seconds});
+  // rangeSize[timeRange(elapsed_seconds)] += string(" ") +=
+  // std::to_string(N);
 
-    // Prepare table with time ranges
-    for (unsigned int i = 0; i < rangeThreshold.size(); ++i) {
-      string doubleString = std::to_string(rangeThreshold[i]);
-      string col1 = doubleString.substr(0, doubleString.find(".") + 2);
-      rangesTable.addRow({"<= " + col1, rangeSize[i]});  // \u2264
-    }
-    string lastString = std::to_string(rangeThreshold.back());
-    string col1 = lastString.substr(0, lastString.find(".") + 2);
-    rangesTable.addRow({">  " + col1, rangeSize.back()});
+  // Prepare table with time ranges
+  // for (unsigned int i = 0; i < rangeThreshold.size(); ++i) {
+  //   string doubleString = std::to_string(rangeThreshold[i]);
+  //   string col1 = doubleString.substr(0, doubleString.find(".") + 2);
+  //   rangesTable.addRow({"<= " + col1, rangeSize[i]});  // \u2264
+  // }
+  // string lastString = std::to_string(rangeThreshold.back());
+  // string col1 = lastString.substr(0, lastString.find(".") + 2);
+  // rangesTable.addRow({">  " + col1, rangeSize.back()});
 
-    // Print to file
-    fileres << "--- SUMMARY OF RESULTS ---\n\n";
-    fileres << "Execution times:\n";
-    resultsTable.print(fileres);
-    fileres << "\nDistribution of problems in each time range:\n";
-    rangesTable.print(fileres);
-    // Print to console
-    if (P.print_console) {
-      cout << "\n--- SUMMARY OF RESULTS ---\n";
-      resultsTable.print(cout);
-      rangesTable.print(cout);
-    }
-  } catch (std::exception& e) {
+  // // Print to file
+  // fileres << "--- SUMMARY OF RESULTS ---\n\n";
+  // fileres << "Execution times:\n";
+  // resultsTable.print(fileres);
+  // fileres << "\nDistribution of problems in each time range:\n";
+  // rangesTable.print(fileres);
+  // // Print to console
+  // if (P.print_console) {
+  //   cout << "\n--- SUMMARY OF RESULTS ---\n";
+  //   resultsTable.print(cout);
+  //   rangesTable.print(cout);
+  // }
+  catch (std::exception& e) {
     std::cout << ">>> EXCEPTION: " << e.what() << std::endl;
   }
   sol_cplex.close();
@@ -168,6 +204,8 @@ void testTimes(const Params& P) {
 }
 
 int main() {
-  testTimes(Params());
+  Params P = Params();
+  if (P.generate_instances) generateInstances(P);
+  if (P.solve_cplex || P.solve_heur) testTimes(P);
   return 0;
 }

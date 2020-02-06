@@ -95,7 +95,7 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
   // vector<vertex>* tour0 = nearestNeighbour(C, N);
   double tot_seconds = 0.0, part_seconds = 0.0;
   log << "*** ITERATION OF LIN-KERNIGHAN HEURISTIC ***\n";
-  TSPsolution best(-1, 0, nullptr);
+  TSPsolution best(-1.0);
   set<Tour> exploredSolutions;
   // First tour generated with nearest neighbour
   for (unsigned int i = 0; i < P.LK_iterations;
@@ -109,7 +109,7 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
     auto end = std::chrono::system_clock::now();
     part_seconds = std::chrono::duration<double>(end - start).count();
     TSPsolution sol = heur.getSolution();
-    if (best.objVal == -1 || sol.objVal < best.objVal) best = sol;
+    if (best.objVal == -1.0 || sol.objVal < best.objVal) best = sol;
     log << "Solved in: " << part_seconds << " sec\n" << sol;
   }
   delete tour0;

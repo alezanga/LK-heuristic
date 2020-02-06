@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "TSPmodel.hpp"
+#include "CPLEX.hpp"
 #include "TSPsolution.hpp"
 #include "utils/cpxmacro.hpp"
 
@@ -17,9 +17,9 @@ const int N = 4;
 const int NAME_SIZE = 512;
 char name[NAME_SIZE];
 
-TSPmodel::TSPmodel(int N, double* C, const char sep) : N(N), C(C) {
+CplexModel::CplexModel(int N, double* C, const char sep) : N(N), C(C) {
   n_var = (N - 1) * (2 * N - 1);
-  nameMap = new string[n_var];
+  nameMap = vector<string>(n_var);
 
   // Declare cplex env vars
   DECL_ENV(env);
@@ -28,12 +28,12 @@ TSPmodel::TSPmodel(int N, double* C, const char sep) : N(N), C(C) {
   setupLP(sep);
 }
 
-TSPmodel::~TSPmodel() {
+CplexModel::~CplexModel() {
   CPXfreeprob(env, &lp);
   CPXcloseCPLEX(&env);
 }
 
-void TSPmodel::setupLP(const char sep) const {
+void CplexModel::setupLP(const char sep) {
   // * ---- ADD VARIABLES ----
 
   vector<vector<int>> xMap;
@@ -56,7 +56,7 @@ void TSPmodel::setupLP(const char sep) const {
       // printf("%c %c %c\n", nameN[i], nameN[j], *xname);
       CHECKED_CPX_CALL(CPXnewcols, env, lp, 1, &obj, &lb, &ub, &xtype, &xname);
 
-      nameMap[x_position] = name;
+      nameMap[x_position] = string(name);
       xMap[i][j] = x_position++;
     }
 
@@ -83,7 +83,7 @@ void TSPmodel::setupLP(const char sep) const {
       char* yname = static_cast<char*>(name);
       CHECKED_CPX_CALL(CPXnewcols, env, lp, 1, &obj, &lb, &ub, &ytype, &yname);
 
-      nameMap[y_position] = name;
+      nameMap[y_position] = std::string(name);
       yMap[i][j] = y_position++;
     }
 
@@ -177,12 +177,12 @@ void TSPmodel::setupLP(const char sep) const {
   CHECKED_CPX_CALL(CPXwriteprob, env, lp, filename.c_str(), nullptr);
 }
 
-void TSPmodel::solve() const {
+void CplexModel::solve() const {
   // optimize
   CHECKED_CPX_CALL(CPXmipopt, env, lp);
 }
 
-const TSPsolution TSPmodel::getSolution() const {
+const TSPsolution CplexModel::getSolution() const {
   // print
   double objval;
   CHECKED_CPX_CALL(CPXgetobjval, env, lp, &objval);
@@ -191,8 +191,8 @@ const TSPsolution TSPmodel::getSolution() const {
     throw std::runtime_error(std::string(__FILE__) + ":" + STRINGIZE(__LINE__) +
                              ": " + "different number of variables");
   }
-  double* varVals = new double[n];
-  CHECKED_CPX_CALL(CPXgetx, env, lp, varVals, 0, n - 1);
+  vector<double> varVals(n);
+  CHECKED_CPX_CALL(CPXgetx, env, lp, &varVals[0], 0, n - 1);
   // CHECKED_CPX_CALL(CPXsolwrite, env, lp, "Lab1TSP.sol");
 
   return TSPsolution(objval, N, varVals, nameMap);

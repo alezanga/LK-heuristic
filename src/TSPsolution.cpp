@@ -4,33 +4,16 @@ using std::ostream;
 using std::string;
 using std::vector;
 
-TSPsolution::TSPsolution(const double obj, const unsigned int N, double* v,
-                         string* n, const string& stour,
+TSPsolution::TSPsolution(const double obj, const unsigned int N,
+                         const vector<double>& varmap,
+                         const vector<string>& namemap, const string& stour,
                          const vector<vertex>& vetour)
-    : varVals(v),
-      nameMap(n),
+    : varVals(varmap),
+      nameMap(namemap),
       objVal(obj),
       N(N),
-      asize((N - 1) * (2 * N - 1)),
       stour(stour),
       vtour(vetour) {}
-
-TSPsolution& TSPsolution::operator=(const TSPsolution& o) {
-  objVal = o.objVal;
-  N = o.N;
-  asize = o.asize;
-  stour = o.stour;
-  vtour = o.vtour;
-  varVals = o.varVals ? new double(*o.varVals) : nullptr;
-  nameMap = o.nameMap ? new string(*o.nameMap) : nullptr;
-  return *this;
-}
-
-TSPsolution::~TSPsolution() {
-  if (varVals) delete[] varVals;
-  if (nameMap) delete[] nameMap;
-}
-
 ostream& operator<<(ostream& out, const TSPsolution& sol) {
   out << "*************************************\n";
   out << "Size: " << sol.N << "\nObj. value: " << sol.objVal << "\n";

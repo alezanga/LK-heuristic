@@ -117,7 +117,7 @@ void LK::solve() {
     Tour curr_tour = *current_it;
     // Improve the current solution with LK
     improved = improve(curr_tour);
-    std::cout << i << " - improved: " << improved << std::endl;
+    // std::cout << i << " - improved: " << improved << std::endl;
     // Save improved solution
     auto [new_it, ins] = solutions.insert(curr_tour);
     if (ins)
@@ -298,22 +298,23 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
         L.pop_back();  // remove t1
 
         if (is_tour) {
-          bool found = solutions.find(new_tour) != solutions.end();
-          if (found) {
-            // Tour already present -> always stop
-            improvedx = false;
-            stop = true;
-          } else if (relink_gain > G) {
-            // Tour is actually a new improving solution
-            G = relink_gain;
-            if (i > P.K || !chooseY(tour, t1, t2i, gi, L, i)) {
-              // If it cannot improve further
-              // Replace it with new improving tour
-              tour = new_tour;
-              updateGoodEdges(tour);
+          if (relink_gain > G) {
+            bool found = solutions.find(new_tour) != solutions.end();
+            if (found)
+              // Tour already present -> always stop
+              improvedx = false;
+            else {
+              // Tour is actually a new improving solution
+              G = relink_gain;
+              if (i > P.K || !chooseY(tour, t1, t2i, gi, L, i)) {
+                // If it cannot improve further
+                // Replace it with new improving tour
+                tour = new_tour;
+                updateGoodEdges(tour);
+              }
+              // either chooseY or new_tour improved
+              improvedx = true;
             }
-            // either chooseY or new_tour improved
-            improvedx = true;
             stop = true;
           } else if (i <= backtraking_threshold) {
             // Try to go see if it becomes a gainful tour later on
@@ -367,6 +368,7 @@ const TSPsolution LK::getSolution() const {
   // TODO: maybe I can avoid passing both string and vector. I could also
   // use python to plit the string
   Tour final_tour = *current_it;
-  return TSPsolution(final_tour.getObjVal(), N, nullptr, nullptr,
-                     final_tour.toString(), final_tour.toVector());
+  return TSPsolution(final_tour.getObjVal(), N, vector<double>(),
+                     vector<std::string>(), final_tour.toString(),
+                     final_tour.toVector());
 }

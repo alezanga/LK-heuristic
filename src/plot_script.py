@@ -112,7 +112,7 @@ def plotPath(coords, tour=[], filename=""):
 
     x, y = zip(*coords)
 
-    plt.scatter(x, y, marker='o', color='red', zorder=-1)
+    plt.scatter(x, y, marker='o', markersize=4, color='red', zorder=-1)
 
     if len(tour) == len(coords):
         for i in range(0, n-1):

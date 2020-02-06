@@ -12,7 +12,7 @@ ODIR = build
 SRCDIR = src
 BIN = bin
 
-OBJ = $(ODIR)/main.o $(ODIR)/TSPmodel.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
+OBJ = $(ODIR)/main.o $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
 	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Params.o $(ODIR)/Pair.o
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp

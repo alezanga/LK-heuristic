@@ -9,17 +9,16 @@ typedef unsigned int vertex;
 
 struct TSPsolution {
   friend std::ostream& operator<<(std::ostream&, const TSPsolution&);
-  TSPsolution(const double, const unsigned int, double* = nullptr,
-              std::string* = nullptr, const std::string& = "",
+  TSPsolution(const double = 0.0, const unsigned int = 0,
+              const std::vector<double>& = std::vector<double>(),
+              const std::vector<std::string>& = std::vector<std::string>(),
+              const std::string& = "",
               const std::vector<vertex>& = std::vector<vertex>());
-  TSPsolution& operator=(const TSPsolution&);
-  ~TSPsolution();
 
-  double* varVals;
-  std::string* nameMap;
+  std::vector<double> varVals;
+  std::vector<std::string> nameMap;
   double objVal;
-  int N;
-  int asize;
+  unsigned int N;
   std::string stour;
   std::vector<vertex> vtour;
 };

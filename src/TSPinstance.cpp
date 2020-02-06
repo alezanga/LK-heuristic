@@ -48,6 +48,7 @@ void TSPinstance::randomPolygon(unsigned int n_sides, unsigned int h,
 
 /**
  * Generate a random number of poligons using exactly N vertices
+ * Note: works for N >= 6
  * @param N number of vertices
  */
 void TSPinstance::generateRandomPolygons(unsigned int N) {
@@ -67,27 +68,52 @@ void TSPinstance::generateRandomPolygons(unsigned int N) {
   unsigned int width = N;
   unsigned int height = N;
 
-  // Number of polygons to draw
-  std::uniform_int_distribution<unsigned int> randomUInt((N < 20) ? 1 : 2,
-                                                         N / 10);
-  unsigned n_polygons = randomUInt(re);
-
-  // Reserve a minimum of 4 sides for each polygon
-  vector<unsigned int> sides_polygons(n_polygons, 3);
-  unsigned int remainder = N - n_polygons * 3;
-  // Split N into n_polygons numbers such that their sum is N.
-  std::uniform_int_distribution<unsigned int> randomIndex(0, n_polygons - 1);
-  // TODO: max sides??
-  while (remainder > 0) {
-    unsigned int max_incr = (remainder > N / 12) ? N / 12 : remainder;
-    std::uniform_int_distribution<unsigned int> randomIncrement(1, max_incr);
-    unsigned int inc = randomIncrement(re);
-    sides_polygons[randomIndex(re)] += inc;
-    remainder -= inc;
+  // Max number of sides for polygons
+  unsigned int max_sides = 10;
+  unsigned int min_sides = 3;
+  // Distribution for number of sides
+  std::uniform_int_distribution<unsigned int> randomUInt(min_sides, max_sides);
+  vector<unsigned int> sides_pol;
+  unsigned int sides_sum = 0;
+  unsigned int remainder = 0;
+  while (sides_sum < N) {
+    unsigned int s = randomUInt(re);
+    if (s > (N - sides_sum)) {
+      remainder = N - sides_sum;
+      break;
+    }
+    sides_pol.push_back(s);
+    sides_sum += s;
   }
+  // Fix polygons adding or removing sides to desired number
+  if (remainder) {
+    if (remainder < min_sides) {  // cannot make a polygon
+                                  // Remove some edges from previous polygons
+      for (unsigned int& np : sides_pol) {
+        if (np < max_sides) {
+          np++;  // add a side to a polygon
+          remainder--;
+          if (remainder == 0) break;
+        }
+      }
+      // If still there are missing points
+      if (remainder) {
+        for (unsigned int& np : sides_pol) {
+          if (np > min_sides) {
+            np--;  // remove a side from a polygon
+            remainder++;
+            if (remainder == min_sides) break;
+          }
+        }
+      }
+    }
+    // remainder >= 3
+    if (remainder) sides_pol.push_back(remainder);
+  }
+  // if remainder == 0 nothing to do
 
   // Build each polygon
-  for (unsigned int sides : sides_polygons) randomPolygon(sides, height, width);
+  for (unsigned int sides : sides_pol) randomPolygon(sides, height, width);
 }
 
 /**
