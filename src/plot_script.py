@@ -24,7 +24,7 @@ def plotTimes(opt_times, heur_times, title, filename):
     N_opt, t_opt = zip(*opt_times)
     N_heur, t_heur = zip(*heur_times)
 
-    plt.xticks(N_opt, N_opt)
+    plt.xticks(N_opt, N_opt, rotation=45)
 
     plt.plot(N_opt, t_opt, linestyle='--', marker='o', color='green',
              label='CPLEX optimal')
@@ -64,7 +64,7 @@ def plotError(opt_value, heur_value, title, filename):
     N_opt, v_opt = zip(*opt_value)
     N_heur, v_heur = zip(*heur_value)
 
-    plt.xticks(N_opt, N_opt)
+    plt.xticks(N_opt, N_opt, rotation=45)
 
     # plt.plot(N_opt, v_opt, linestyle='--', marker='o', color='blue',
     #          label='CPLEX optimal')
@@ -112,7 +112,7 @@ def plotPath(coords, tour=[], filename=""):
 
     x, y = zip(*coords)
 
-    plt.scatter(x, y, marker='o', markersize=4, color='red', zorder=-1)
+    plt.scatter(x, y, marker='o', s=9, color='red', zorder=-1)
 
     if len(tour) == len(coords):
         for i in range(0, n-1):

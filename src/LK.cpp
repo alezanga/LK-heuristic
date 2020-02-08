@@ -88,7 +88,13 @@ void LK::updateGoodEdges(const Tour& newTour) {
  */
 LK::LK(unsigned int N, const double* C, set<Tour>& vt,
        const std::set<Tour>::iterator& curr)
-    : N(N), C(C), solutions(vt), current_it(curr), G(0.0), intensify(false) {
+    : N(N),
+      C(C),
+      solutions(vt),
+      current_it(curr),
+      G(0.0),
+      intensify(false),
+      restart(false) {
   if (P.max_neighbours == 0) P.max_neighbours = N - 3;
 }
 
@@ -168,11 +174,16 @@ bool LK::improve(Tour& tour) {
         if (chooseX(tour, t1, t3, gi, L, 2))
           // Stop improving and restart again
           return true;
+        if (restart) break;
         // else no tour could be closed, try other neighbours
         L.pop_back();  // remove t3
       }
       // Finished all neighbours, no move improved the current tour. So start
       // by removing a different edge.
+      if (restart) {
+        restart = false;
+        break;
+      };
     }
     // The edge (t1, t2) didn't improve solution. Start from a different vertex.
   }
@@ -280,6 +291,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
       if (try_both_neighbours) {
         //"try_both_neighbours" implies previous choice was a tour.
         improvedx = chooseY(tour, t1, t2i, gi, L, i);
+        if (restart) return false;
         // Neighbour has been tried
         try_both_neighbours = false;
         stop = true;
@@ -300,10 +312,13 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
         if (is_tour) {
           if (relink_gain > G) {
             bool found = solutions.find(new_tour) != solutions.end();
-            if (found)
+            if (found) {
               // Tour already present -> always stop
               improvedx = false;
-            else {
+              // Since the solution converged to previous solution
+              // then restart changing the starting vertex
+              restart = true;
+            } else {
               // Tour is actually a new improving solution
               G = relink_gain;
               if (i > P.K || !chooseY(tour, t1, t2i, gi, L, i)) {
@@ -312,6 +327,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
                 tour = new_tour;
                 updateGoodEdges(tour);
               }
+              if (restart) return false;
               // either chooseY or new_tour improved
               improvedx = true;
             }
@@ -319,6 +335,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
           } else if (i <= backtraking_threshold) {
             // Try to go see if it becomes a gainful tour later on
             improvedx = chooseY(tour, t1, t2i, gi, L, i);
+            if (restart) return false;
             if (!improvedx) {
               // No improvement from going on with current tour, so let's try
               // other neighbour (in this case stop will be == false)
@@ -356,6 +373,7 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
 
     // Stop at first improving tour
     if (chooseX(tour, t1, t_odd, gc, L, i + 1)) return true;
+    if (restart) return false;
     // else pop t_odd and try other possibilities
     L.pop_back();
   }

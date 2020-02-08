@@ -25,7 +25,11 @@ namespace fs = std::experimental::filesystem;
 
 // Global vector with time threshold to visualize when finished
 vector<double> rangeThreshold = {0.1, 1, 10, 100};
-const std::vector<string> fileToRead{"d198.csv", "d657.csv"};
+const std::vector<string> fileToRead{
+    "tsp_10.csv", "tsp_15.csv", "tsp_20.csv", "tsp_25.csv",  "tsp_30.csv",
+    "tsp_35.csv", "tsp_40.csv", "tsp_45.csv", "tsp_50.csv",  "tsp_55.csv",
+    "tsp_60.csv", "tsp_65.csv", "tsp_70.csv", "tsp_75.csv",  "tsp_80.csv",
+    "tsp_85.csv", "tsp_90.csv", "tsp_95.csv", "tsp_100.csv", "tsp_105.csv"};
 
 /**
  * Returns int index corresponding to the range where 'time' belongs
@@ -61,7 +65,7 @@ pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
   // LK model
   pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, log_lk);
   log_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
-         << "Total time: " << lk_res.second << "\n"
+         << "Total time: " << lk_res.second << " sec\n"
          << lk_res.first;
   log_lk << "----------------------------------------------------\n"
          << std::endl;
@@ -126,8 +130,9 @@ void testTimes(const Params& P) {
       for (N = P.N_min; N <= P.N_max; N += P.N_incr) {
         coords.generateRandomPolygons(N);
         double* cost = coords.costMatrix();
-        if (P.solve_heur) solopt = runHeuristic(P, cost, coords, N, sol_lk, Py);
-        if (P.solve_cplex) solheur = runOptimal(P, cost, N, sol_cplex);
+        if (P.solve_heur)
+          solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        if (P.solve_cplex) solopt = runOptimal(P, cost, N, sol_cplex);
 
         heur_times.push_back({N, solheur.second});
         heur_values.push_back({N, solheur.first.objVal});
@@ -148,8 +153,9 @@ void testTimes(const Params& P) {
         N = coords.loadFromCsv(file.path().string());
         double* cost = coords.costMatrix();
         cout << "Loaded file " << filename << std::endl;
-        if (P.solve_heur) solopt = runHeuristic(P, cost, coords, N, sol_lk, Py);
-        if (P.solve_cplex) solheur = runOptimal(P, cost, N, sol_cplex);
+        if (P.solve_heur)
+          solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        if (P.solve_cplex) solopt = runOptimal(P, cost, N, sol_cplex);
 
         heur_times.push_back({N, solheur.second});
         heur_values.push_back({N, solheur.first.objVal});

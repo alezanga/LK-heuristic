@@ -77,10 +77,10 @@ class PyWrapper {
     PyObject* py_fname = Py_BuildValue("s#", filename.c_str(), filename.size());
 
     // Call plot function
-    PyObject* fun = PyObject_CallFunctionObjArgs(
+    [[maybe_unused]] PyObject* fun = PyObject_CallFunctionObjArgs(
         pFunc, py_opt_times, py_heur_times, py_title, py_fname, NULL);
 
-    Py_DECREF(fun);
+    // Py_DECREF(fun);
     Py_DECREF(py_fname);
     Py_DECREF(py_title);
     Py_DECREF(pFunc);
@@ -129,10 +129,10 @@ class PyWrapper {
     PyObject* py_fname = Py_BuildValue("s#", filename.c_str(), filename.size());
 
     // Call plot function
-    PyObject* fun = PyObject_CallFunctionObjArgs(pFunc, py_opt_val, py_heur_val,
-                                                 py_title, py_fname, NULL);
+    [[maybe_unused]] PyObject* fun = PyObject_CallFunctionObjArgs(
+        pFunc, py_opt_val, py_heur_val, py_title, py_fname, NULL);
 
-    Py_DECREF(fun);
+    // Py_DECREF(fun);
     Py_DECREF(py_fname);
     Py_DECREF(py_title);
     Py_DECREF(pFunc);
@@ -175,14 +175,14 @@ class PyWrapper {
     PyObject* py_fname = Py_BuildValue("s#", filename.c_str(), filename.size());
 
     // Call plot function
-    PyObject* fun =
+    [[maybe_unused]] PyObject* fun =
         PyObject_CallFunctionObjArgs(pFunc, py_coord, py_path, py_fname, NULL);
 
     Py_DECREF(py_fname);
     Py_DECREF(pFunc);
     Py_DECREF(py_path);
     Py_DECREF(py_coord);
-    Py_DECREF(fun);
+    // Py_DECREF(fun);
     Py_DECREF(pModule);
   }
 };

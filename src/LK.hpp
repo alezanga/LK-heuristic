@@ -19,10 +19,12 @@ class LK {
   const double* C;
   std::set<Tour>& solutions;
   std::set<Tour>::iterator current_it;
+  // Parameters for local search procedure
   double G;
   // A maxheap with best T tours, and sorted vector with their intersection
   std::pair<heap_set, std::vector<Pair>> good_edges;
   bool intensify;
+  bool restart;
   Params P;
 
   static bool broken(const std::vector<vertex>&, const vertex&, const vertex&);

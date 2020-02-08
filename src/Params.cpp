@@ -8,7 +8,7 @@ struct Params {
   const bool print_console = false;
   const bool generate_instances = false;
   const mode_type mode = load;
-  const bool solve_cplex = false;
+  const bool solve_cplex = true;
   const bool solve_heur = true;
   const unsigned int N_min = 10;
   const unsigned int N_incr = 5;
@@ -17,7 +17,7 @@ struct Params {
   // Params for LK
 
   // Max lenght of alternating path to search for
-  const unsigned int K = 100;
+  const unsigned int K = 200;
   // Max number of improving iterations (restarts)
   const unsigned int I = 1000;
   // Max number of alternatives to look for when considering edges to add (0
@@ -28,7 +28,7 @@ struct Params {
   // Number of tours to consider for intensification
   const unsigned int intens_n_tours = 20;
   // Number of random restarts
-  const unsigned int LK_iterations = 10;
+  const unsigned int LK_iterations = 30;
 };
 
 #endif /* PARAMS_H */
