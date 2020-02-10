@@ -1,6 +1,14 @@
+% !TeX spellcheck = en_GB
+% !TeX root = memoco-report.tex
+
+\section{Instance generation}
+
 \section{Exact method}
 \label{chap:cplexm}
 \subsection{Description}
+The exact algorithm makes use of the IBM CPLEX C++ APIs to solve a problem to optimality. In order to model the TSP problem a network flow model is used, as described in the assignment description. \\
+The linear programming mode build using the column generation method in the function \texttt{setupLP} in file \texttt{CPLEX.cpp}.
+
 
 %\begin{figure}[htp]
 %  \centering
@@ -12,6 +20,25 @@
 \section{Heuristic method}
 \label{chap:heuris}
 \subsection{Description}
+The implemented heuristic is inspired by a popular local search method called Lin-Kernighan heuristic, originally proposed in 1973 in \cite{LinK73}. This algorithm iteratively tries to improve the previous solution until some stopping conditions are met. The general functioning of the heuristic is summarised below.
+\begin{enumerate}
+	\item Start from a (possibly random) feasible solution;
+	\item Choose an initial vertex $s$;
+	\item Remove an edge $x_1 = (s, v)$ which belongs to the current solution and add an edge $y_1 = (v, z)$ ($z \ne s$) which does not belong to the current solution, such that the gain of this move (removal and insertion) is positive;
+	\item Perform step 3 with the following additional constraints:
+	\begin{itemize}
+		\item the edge to remove ($x_i$) must share 1 vertex with the previous added edge ($y_{i-1}$);
+		\item the edge to remove $x_i = (a, b)$ must be chosen such that if $b$ reconnects to the starting vertex $s$ with edge $(b, s)$, the produced solution is feasible;
+		\item the gain (decrease of objective value) of the solution found with previous constraint must be greater than the best increase found so far.
+	\end{itemize}
+	If the second and third conditions are satisfied, the procedure saves this feasible solution, updates the best gain, and proceeds to step 5. Otherwise it tries the other possibility for $x_i$. If this fails too the procedure stops, and the last saved solution is returned;
+	\item Repeat step 4. When no improving solution can be found set the current best solution as starting solution and restart from step 2.
+\end{enumerate}
+
+As stated in the original paper, many possible refinements are possible. I added some 
+
+\subsection{Search intensification}
+Between the iterations the algorithm may find some "good" edges which belongs to the optimal solution or to some reasonably good ones. Subsequently it may loose time by repeatedly breaking and adding them. In addition these "good" edges are likely to be present in many of the best solutions (local optima) found between iterations. Consequently the algorithm keeps track of the edges shared by best $S$ solutions, where $S$ is a configurable parameter.
 
 \subsection{Hyperparameters}
 

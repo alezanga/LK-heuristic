@@ -1,20 +1,57 @@
+% !TeX spellcheck = en_GB
+% !TeX root = memoco-report.tex
+
 \section{Introduction}
 \label{chap:introduction}
+
+\subsection{Description of the problem}
+The task of the exercise was to develop two algorithms capable of solving the TSP problem, specialized to the domain of drilling holes in electric panels. The first algorithm implements an exact methods using the IBM CPLEX optimization suite. The second algorithm is an approximated heuristic, inspired to the Lin-Kernighan algorithm\cite{LinK73}.\\ Both algorithms have been tested on synthetic instances produced taking into account the applicative domain. The two algorithms are described in the following pages, and the performed tests and results are listed in the last section.
+
+\subsection{Description of provided material}
 %\minitoc
-Ciao
+The delivered material includes all the produced code and everything necessary to run the program.
+The provided archive comes with the following structure:
+\renewcommand*\DTstylecomment{\rmfamily\color{blue}\textit}
 \dirtree{%
 	.1 /.
-	.2 bin.
-	.2 home.
-	.3 jeancome.
-	.4 texmf.
-	.5 tex.
-	.6 latex.
-	.7 dirtree.
-	.3 jeancomeson\DTcomment{comment}.
+	.2 bin/\DTcomment{Binary file folder}.
+	.2 build/\DTcomment{Folder for build file}.
+	.2 files/.
+	.2 instances/\DTcomment{Contains some test instances}.
+	.2 plots/.
+	.2 src/.
+	.3 utils/\DTcomment{Utilities}.
+	.4 cpxmacro.hpp.
+	.4 params.hpp.
+	.4 python\_adapter.hpp.
+	.4 variadic\_table.hpp.
+	.4 yaml\_parser.hpp.
+	.3 calibrate.cpp\DTcomment{Main file to launch calibration}.
+	.3 config.yml.
+	.3 CPLEX.cpp.
+	.3 CPLEX.hpp.
+	.3 IteratedLK.cpp.
+	.3 IteratedLK.hpp.
+	.3 LK.cpp.
+	.3 LK.hpp.
+	.3 main.cpp\DTcomment{Program main}.
+	.3 Pair.cpp.
+	.3 Pair.hpp.
+	.3 plot\_script.py.
+	.3 Tour.cpp.
+	.3 Tour.hpp.
+	.3 TSPinstance.cpp.
+	.3 TSPinstance.hpp.
+	.3 TSPsolution.cpp.
+	.3 TSPsolution.hpp.
 }
 
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "isae-report-template"
-%%% End: 
+\subsubsection{How to run}
+In order to run the program the following packages must be installed:
+\begin{itemize}
+	\item \texttt{g++ 7} or higher;
+	\item \texttt{IBM ILOG CPLEX Optimization Studio 12.8} or higher;
+	\item \texttt{Python 2.7} (only if you want to see some graphs).
+\end{itemize}
+
+To run the program from a Linux environment you should set the desired parameters in the file \texttt{config.yml}, then compile and run with \texttt{make \&\& ./bin/main}.
