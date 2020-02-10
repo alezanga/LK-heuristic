@@ -4,7 +4,7 @@
 #include <set>
 #include <vector>
 
-#include "Params.cpp"
+#include "utils/params.hpp"
 
 struct Tour;
 struct Pair;
@@ -19,6 +19,7 @@ class LK {
   const double* C;
   std::set<Tour>& solutions;
   std::set<Tour>::iterator current_it;
+  int current_improving_iterations;
   // Parameters for local search procedure
   double G;
   // A maxheap with best T tours, and sorted vector with their intersection
@@ -67,7 +68,7 @@ class LK {
    * @param int_depth minimum depth to apply intensification
    * @param int_sols minimum number of solutions before applying intensification
    */
-  LK(unsigned int, const double*, std::set<Tour>&,
+  LK(const Params&, unsigned int, const double*, std::set<Tour>&,
      const std::set<Tour>::iterator&);
   void solve();
   const TSPsolution getSolution() const;

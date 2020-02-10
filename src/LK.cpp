@@ -86,7 +86,7 @@ void LK::updateGoodEdges(const Tour& newTour) {
  * @param int_depth minimum depth to apply intensification
  * @param int_sols minimum number of solutions before applying intensification
  */
-LK::LK(unsigned int N, const double* C, set<Tour>& vt,
+LK::LK(const Params& p, unsigned int N, const double* C, set<Tour>& vt,
        const std::set<Tour>::iterator& curr)
     : N(N),
       C(C),
@@ -94,7 +94,8 @@ LK::LK(unsigned int N, const double* C, set<Tour>& vt,
       current_it(curr),
       G(0.0),
       intensify(false),
-      restart(false) {
+      restart(false),
+      P(p) {
   if (P.max_neighbours == 0) P.max_neighbours = N - 3;
 }
 
@@ -124,17 +125,21 @@ void LK::solve() {
     // Improve the current solution with LK
     improved = improve(curr_tour);
     // std::cout << i << " - improved: " << improved << std::endl;
-    // Save improved solution
-    auto [new_it, ins] = solutions.insert(curr_tour);
-    if (ins)
-      current_it = new_it;
-    else
-      break;  // Cannot happen, since every solution is improving
-    i++;
-    // If we obtained min number of local optima, start intensification
-    if (!intensify && i > P.intens_n_tours) {
-      intensify = true;
-      intersectGoodEdges();
+    if (improved) {
+      // Save improved solution
+      auto [new_it, ins] = solutions.insert(curr_tour);
+      if (ins) {
+        current_it = new_it;
+        current_improving_iterations = i;
+      } else
+        // Cannot happen, since every solution is improving
+        std::cerr << "Error: duplicate solution!\n";
+      i++;
+      // If we obtained min number of local optima, start intensification
+      if (!intensify && i > P.intens_n_tours) {
+        intensify = true;
+        intersectGoodEdges();
+      }
     }
   }
   // Stop, since no run improved the gain or max number of iterations reached
@@ -266,7 +271,6 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
 
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
                  vector<vertex>& L, const unsigned int i) {
-  unsigned int backtraking_threshold = 2;
   vector<vertex> around_lasty = tour.around(lasty, C);
   bool improvedx = false;
   bool try_both_neighbours = false;
@@ -332,7 +336,7 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
               improvedx = true;
             }
             stop = true;
-          } else if (i <= backtraking_threshold) {
+          } else if (i <= P.backtracking_threshold) {
             // Try to go see if it becomes a gainful tour later on
             improvedx = chooseY(tour, t1, t2i, gi, L, i);
             if (restart) return false;
@@ -388,5 +392,5 @@ const TSPsolution LK::getSolution() const {
   Tour final_tour = *current_it;
   return TSPsolution(final_tour.getObjVal(), N, vector<double>(),
                      vector<std::string>(), final_tour.toString(),
-                     final_tour.toVector());
+                     final_tour.toVector(), current_improving_iterations);
 }

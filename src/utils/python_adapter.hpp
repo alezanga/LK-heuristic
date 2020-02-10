@@ -89,10 +89,11 @@ class PyWrapper {
     Py_DECREF(py_opt_times);
   }
 
-  void plot_objvalues(const vector<pair<unsigned int, double>>& opti,
-                      const vector<pair<unsigned int, double>>& heur,
-                      const std::string& title,
-                      const std::string& filename) const {
+  void plot_errors(const vector<pair<unsigned int, double>>& opti,
+                   const vector<pair<unsigned int, double>>& heur,
+                   const vector<pair<unsigned int, double>>& nn,
+                   const std::string& title,
+                   const std::string& filename) const {
     // Prepare optimal obj values
     PyObject* py_opt_val = PyList_New(opti.size());
     for (unsigned int i = 0; i < opti.size(); ++i) {
@@ -107,6 +108,14 @@ class PyWrapper {
       PyObject* tuple = Py_BuildValue("(id)", heur[i].first, heur[i].second);
       // Add tuple to list
       PyList_SET_ITEM(py_heur_val, i, tuple);
+    }
+
+    // Prepare nearest neigh obj values
+    PyObject* py_nn_val = PyList_New(nn.size());
+    for (unsigned int i = 0; i < nn.size(); ++i) {
+      PyObject* tuple = Py_BuildValue("(id)", nn[i].first, nn[i].second);
+      // Add tuple to list
+      PyList_SET_ITEM(py_nn_val, i, tuple);
     }
 
     // Load the module object
@@ -130,7 +139,7 @@ class PyWrapper {
 
     // Call plot function
     [[maybe_unused]] PyObject* fun = PyObject_CallFunctionObjArgs(
-        pFunc, py_opt_val, py_heur_val, py_title, py_fname, NULL);
+        pFunc, py_opt_val, py_heur_val, py_nn_val, py_title, py_fname, NULL);
 
     // Py_DECREF(fun);
     Py_DECREF(py_fname);
@@ -139,6 +148,7 @@ class PyWrapper {
     Py_DECREF(pModule);
     Py_DECREF(py_heur_val);
     Py_DECREF(py_opt_val);
+    Py_DECREF(py_nn_val);
   }
 
   void plot_points(const vector<pair<double, double>>& coord,

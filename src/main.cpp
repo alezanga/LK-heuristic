@@ -9,12 +9,13 @@
 
 #include "CPLEX.hpp"
 #include "IteratedLK.hpp"
-#include "Params.cpp"
 #include "TSPinstance.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
+#include "utils/params.hpp"
 #include "utils/python_adapter.hpp"
 #include "utils/variadic_table.hpp"
+#include "utils/yaml_parser.hpp"
 
 using std::cout;
 using std::ofstream;
@@ -25,11 +26,7 @@ namespace fs = std::experimental::filesystem;
 
 // Global vector with time threshold to visualize when finished
 vector<double> rangeThreshold = {0.1, 1, 10, 100};
-const std::vector<string> fileToRead{
-    "tsp_10.csv", "tsp_15.csv", "tsp_20.csv", "tsp_25.csv",  "tsp_30.csv",
-    "tsp_35.csv", "tsp_40.csv", "tsp_45.csv", "tsp_50.csv",  "tsp_55.csv",
-    "tsp_60.csv", "tsp_65.csv", "tsp_70.csv", "tsp_75.csv",  "tsp_80.csv",
-    "tsp_85.csv", "tsp_90.csv", "tsp_95.csv", "tsp_100.csv", "tsp_105.csv"};
+const std::vector<string> fileToRead{"d493.csv"};
 
 /**
  * Returns int index corresponding to the range where 'time' belongs
@@ -120,6 +117,8 @@ void testTimes(const Params& P) {
     vector<pair<unsigned int, double>> cplex_values;
     vector<pair<unsigned int, double>> heur_times;
     vector<pair<unsigned int, double>> heur_values;
+    vector<pair<unsigned int, double>> nn_values;
+    vector<pair<unsigned int, double>> nn_times;
 
     PyWrapper Py;
 
@@ -130,14 +129,24 @@ void testTimes(const Params& P) {
       for (N = P.N_min; N <= P.N_max; N += P.N_incr) {
         coords.generateRandomPolygons(N);
         double* cost = coords.costMatrix();
-        if (P.solve_heur)
+        if (P.solve_heur) {
           solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
-        if (P.solve_cplex) solopt = runOptimal(P, cost, N, sol_cplex);
+          heur_times.push_back({N, solheur.second});
+          heur_values.push_back({N, solheur.first.objVal});
+        }
+        if (P.solve_cplex) {
+          solopt = runOptimal(P, cost, N, sol_cplex);
+          cplex_times.push_back({N, solopt.second});
+          cplex_values.push_back({N, solopt.first.objVal});
+        }
 
-        heur_times.push_back({N, solheur.second});
-        heur_values.push_back({N, solheur.first.objVal});
-        cplex_times.push_back({N, solopt.second});
-        cplex_values.push_back({N, solopt.first.objVal});
+        // Nearest neighbour
+        auto start = std::chrono::system_clock::now();
+        double nncost = nearestNeighbour(cost, N);
+        auto end = std::chrono::system_clock::now();
+        double nn_time = std::chrono::duration<double>(end - start).count();
+        nn_times.push_back({N, nn_time});
+        nn_values.push_back({N, nncost});
 
         cout << std::endl;
 
@@ -153,14 +162,23 @@ void testTimes(const Params& P) {
         N = coords.loadFromCsv(file.path().string());
         double* cost = coords.costMatrix();
         cout << "Loaded file " << filename << std::endl;
-        if (P.solve_heur)
+        if (P.solve_heur) {
           solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
-        if (P.solve_cplex) solopt = runOptimal(P, cost, N, sol_cplex);
-
-        heur_times.push_back({N, solheur.second});
-        heur_values.push_back({N, solheur.first.objVal});
-        cplex_times.push_back({N, solopt.second});
-        cplex_values.push_back({N, solopt.first.objVal});
+          heur_times.push_back({N, solheur.second});
+          heur_values.push_back({N, solheur.first.objVal});
+        }
+        if (P.solve_cplex) {
+          solopt = runOptimal(P, cost, N, sol_cplex);
+          cplex_times.push_back({N, solopt.second});
+          cplex_values.push_back({N, solopt.first.objVal});
+        }
+        // Nearest neighbour
+        auto start = std::chrono::system_clock::now();
+        double nncost = nearestNeighbour(cost, N);
+        auto end = std::chrono::system_clock::now();
+        double nn_time = std::chrono::duration<double>(end - start).count();
+        nn_times.push_back({N, nn_time});
+        nn_values.push_back({N, nncost});
 
         cout << std::endl;
 
@@ -171,8 +189,8 @@ void testTimes(const Params& P) {
     // Plot data with Python
     Py.plot_times(cplex_times, heur_times,
                   "Execution times for each problem size (N)", "times");
-    Py.plot_objvalues(cplex_values, heur_values,
-                      "Objective values for problem size (N)", "values");
+    Py.plot_errors(cplex_values, heur_values, nn_values,
+                   "Objective values for problem size (N)", "values");
   }
 
   // resultsTable.addRow({N, elapsed_seconds});
@@ -210,7 +228,12 @@ void testTimes(const Params& P) {
 }
 
 int main() {
-  Params P = Params();
+  // Read config file
+  YamlP* parser = new YamlP;
+  parser->readConfig("src/config.yml");
+  Params P = parser->config();
+  delete parser;
+
   if (P.generate_instances) generateInstances(P);
   if (P.solve_cplex || P.solve_heur) testTimes(P);
   return 0;

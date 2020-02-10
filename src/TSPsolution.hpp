@@ -13,7 +13,7 @@ struct TSPsolution {
               const std::vector<double>& = std::vector<double>(),
               const std::vector<std::string>& = std::vector<std::string>(),
               const std::string& = "",
-              const std::vector<vertex>& = std::vector<vertex>());
+              const std::vector<vertex>& = std::vector<vertex>(), int = 0);
 
   std::vector<double> varVals;
   std::vector<std::string> nameMap;
@@ -21,6 +21,7 @@ struct TSPsolution {
   unsigned int N;
   std::string stour;
   std::vector<vertex> vtour;
+  int improving_iterations_lk;
 };
 
 #endif /*TSP_SOLUTION*/

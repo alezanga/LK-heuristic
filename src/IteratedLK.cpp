@@ -1,22 +1,19 @@
 #include "IteratedLK.hpp"
 #include "LK.hpp"
 #include "Pair.hpp"
-#include "Params.cpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
+#include "utils/params.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <random>
 #include <set>
 
-using std::ofstream;
+using std::ostream;
 using std::pair;
 using std::set;
 using std::vector;
-
-// TODO: do something for duplicate solutions and early stop if solution and obj
-// val are the same
 
 /**
  * @param N number of tour vertices
@@ -29,16 +26,16 @@ vector<vertex>* naiveTour(const unsigned int N) {
 }
 
 /**
- * Gives a list of N vertices in [0, N) which represents a feasible tour,
- * computing them with cheapest neighbour greedy approach
+ * Cheapest neighbour greedy heuristic
  *
  * @param C cost matrix
  * @param N number of tour vertices
- * @return pointer to list of vertices
+ * @return cost of final tour
  */
-vector<vertex>* nearestNeighbour(const double* C, const unsigned int N) {
+double nearestNeighbour(const double* C, const unsigned int N) {
   vector<vertex>* tour = new vector<vertex>;
   vector<bool> visited(N, false);
+  double cost = 0.0;
   tour->push_back(0);
   for (vertex v = tour->back(); !visited[v]; v = tour->back()) {
     double bestCost = std::numeric_limits<double>::max();
@@ -49,10 +46,11 @@ vector<vertex>* nearestNeighbour(const double* C, const unsigned int N) {
         cheapestNeighbour = z;
       }
     if (cheapestNeighbour != N) tour->push_back(cheapestNeighbour);
+    cost += C[v * N + cheapestNeighbour];
     visited[v] = true;
   }
-  std::cout << std::endl;
-  return tour;
+  delete tour;
+  return cost;
 }
 
 /**
@@ -90,7 +88,7 @@ Tour createTour(vector<vertex> atour, const double* C, const bool permute) {
  * @return pair with solution object and total execution time
  */
 pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
-                                      const double* C, ofstream& log) {
+                                      const double* C, ostream& log) {
   vector<vertex>* tour0 = naiveTour(N);
   // vector<vertex>* tour0 = nearestNeighbour(C, N);
   double tot_seconds = 0.0, part_seconds = 0.0;
@@ -103,7 +101,7 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
     // Create a new permutation of current tour and add to solutions
     auto pit = exploredSolutions.insert(std::move(createTour(*tour0, C, true)));
     log << "Iteration " << i + 1 << "/" << P.LK_iterations << "\n";
-    LK heur(N, C, exploredSolutions, pit.first);
+    LK heur(P, N, C, exploredSolutions, pit.first);
     auto start = std::chrono::system_clock::now();
     heur.solve();
     auto end = std::chrono::system_clock::now();

@@ -13,7 +13,7 @@ SRCDIR = src
 BIN = bin
 
 OBJ = $(ODIR)/main.o $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
-	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Params.o $(ODIR)/Pair.o
+	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Pair.o
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 		$(CC) $(CPPFLAGS) -I$(CPX_INCDIR) -c $^ -o $@
@@ -21,8 +21,14 @@ $(ODIR)/%.o: $(SRCDIR)/%.cpp
 main: $(OBJ)
 		$(CC) $(PY_CFLAGS) $(CPPFLAGS) $(OBJ) -o $(BIN)/main -L$(CPX_LIBDIR) $(CPX_LDFLAGS) $(PY_LDFLAGS)
 
+CAL = $(ODIR)/calibrate.o $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
+	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Pair.o
+
+calibrate: $(CAL)
+		$(CC) $(CPPFLAGS) $(CAL) -o $(BIN)/calibrate -L$(CPX_LIBDIR) $(CPX_LDFLAGS)
+
 clean:
-		rm -rf $(OBJ) $(BIN)/main $(SRCDIR)/*.pyc $(SRCDIR)/__pycache__
+		rm -rf $(OBJ) $(CAL) $(BIN)/main $(BIN)/calibrate $(SRCDIR)/*.pyc $(SRCDIR)/__pycache__
 
 .PHONY: clean
 

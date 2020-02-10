@@ -1,0 +1,25 @@
+# Run parameters
+print_console: false
+generate_instances: false
+mode: load
+solve_cplex: false
+solve_heur: true
+N_min: 10
+N_incr: 5
+N_max: 107
+
+# Params for LK
+# Max lenght of alternating path to search for
+K: 100
+# Max number of improving iterations (restarts)
+I: 600
+# Max number of alternatives to look for when considering edges to add (0 means unbounded)
+max_neighbours: 7
+# Max depth (i) allowing trials of second choice for removing edge x_i
+backtracking_threshold: 2
+# Min lenght of the path to start intensification
+intens_min_depth: 4
+# Number of tours to consider for intensification
+intens_n_tours: 20
+# Number of random restarts
+LK_iterations: 5

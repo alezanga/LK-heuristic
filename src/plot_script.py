@@ -14,6 +14,8 @@ def plotTimes(opt_times, heur_times, title, filename):
 
     @param filename (str): a string with filename to save png plot (empty => do not save)
     """
+    if (len(opt_times) != len(heur_times)):
+        return None
 
     if filename:
         print("Generating execution time plot in folder plots/")
@@ -41,7 +43,7 @@ def plotTimes(opt_times, heur_times, title, filename):
         plt.show()
 
 
-def plotError(opt_value, heur_value, title, filename):
+def plotError(opt_value, heur_value, nn_value, title, filename):
     """
     Plots obj values and errors
 
@@ -49,10 +51,14 @@ def plotError(opt_value, heur_value, title, filename):
 
     @param heur_value (list[tuple[int, float]]): heuristic obj values for each problem
 
+    @param nn_value (list[tuple[int, float]]): nearest neighbour obj values for each problem
+
     @param title (str): a string with plot title
 
     @param filename (str): a string with filename to save png plot (empty => do not save)
     """
+    if (len(opt_value) != len(heur_value) != len(nn_value)):
+        return None
 
     if filename:
         print("Generating error plot in folder plots/")
@@ -61,8 +67,10 @@ def plotError(opt_value, heur_value, title, filename):
 
     opt_value.sort(key=lambda x: x[0])
     heur_value.sort(key=lambda x: x[0])
+    nn_value.sort(key=lambda x: x[0])
     N_opt, v_opt = zip(*opt_value)
-    N_heur, v_heur = zip(*heur_value)
+    _, v_heur = zip(*heur_value)
+    _, v_nn = zip(*nn_value)
 
     plt.xticks(N_opt, N_opt, rotation=45)
 
@@ -71,16 +79,26 @@ def plotError(opt_value, heur_value, title, filename):
     # plt.plot(N_heur, v_heur, linestyle='--', marker='o', color='red',
     #          label='Lin-Keringhan heuristic')
 
-    errors = list()
-    valtoplot = zip(N_heur, v_heur, v_opt)
-    for n, approx, opt in valtoplot:
-        err = abs(approx - opt) / opt * 100
-        errors.append(err)
-        plt.annotate(("%.3f" % err), xy=(n, err), rotation=45,
+    error_heur = list()
+    error_nn = list()
+    valtoplot = zip(N_opt, v_heur, v_nn, v_opt)
+    for n, approx, nn_approx, opt in valtoplot:
+        err_h = abs(approx - opt) / opt * 100
+        err_nn = abs(nn_approx - opt) / opt * 100
+        error_heur.append(err_h)
+        error_nn.append(err_nn)
+        plt.annotate(("%.3f" % err_h), xy=(n, err_h), rotation=45,
                      xytext=(0, 20), ha='center', textcoords='offset points', fontsize=7)
+        # plt.annotate(("%.3f" % err_nn), xy=(n, err_nn), rotation=45,
+        #              xytext=(0, 20), ha='center', textcoords='offset points', fontsize=7)
 
-    plt.plot(N_opt, errors, linestyle='--', marker='o',
-             color='red', label='Heuristic relative error (%)')
+    plt.plot(N_opt, error_heur, linestyle='--', marker='o',
+             color='red', label='LK relative error (%)')
+    plt.plot(N_opt, error_nn, linestyle='--', marker='o',
+             color='blue', label='NN relative error (%)')
+
+    bottom, top = plt.ylim()  # return the current ylim
+    plt.ylim((bottom, top+1))
 
     plt.title(title)
     plt.legend()
