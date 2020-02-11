@@ -136,7 +136,7 @@ void LK::solve() {
         std::cerr << "Error: duplicate solution!\n";
       i++;
       // If we obtained min number of local optima, start intensification
-      if (!intensify && i > P.intens_n_tours) {
+      if (!intensify && good_edges.first.size() > P.intens_n_tours) {
         intensify = true;
         intersectGoodEdges();
       }

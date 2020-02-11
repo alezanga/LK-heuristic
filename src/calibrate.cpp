@@ -20,7 +20,7 @@ std::ostream nullStream(&_nullBuff);
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
-vector<unsigned int> Ks = {2, 100};
+vector<unsigned int> Ks = {100};
 vector<unsigned int> MNs{2, 5, 10};
 vector<unsigned int> BTs{2, 3, 4, 5};
 vector<unsigned int> IMDs{4, 5, 8, 10};
@@ -71,11 +71,11 @@ void calibrateLK(Params P) {
               avg_error += error;
               tot_time += time;
             }
-            avg_error = avg_error / iterations;
+            avg_error = avg_error / iterations * 100;
             double score = 1.0 / ((tot_time * avg_error) + 1.0);
             if (score > best_score) best_score = score;
             table.addRow({k, max_neigh, back_depth, int_min_depth, int_n_tour,
-                          avg_error * 100, best_error * 100, worst_error * 100,
+                          avg_error, best_error * 100, worst_error * 100,
                           improving_it / iterations, tot_time, score});
           }
         }

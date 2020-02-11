@@ -154,7 +154,13 @@ bool Tour::operator==(const Tour& t) const {
  * Returns whether this tour is better (cheaper) than the other.
  * The comparison doesn't make sense if the two tours are of different sizes.
  */
-bool Tour::operator<(const Tour& t) const { return N == t.N && cost < t.cost; }
+bool Tour::operator<(const Tour& t) const {
+  if (N != t.N) throw std::string("Incomparable tours");
+  if (cost < t.cost) return true;
+  if (cost > t.cost) return false;
+  // Costs are the same, so lexicographic compare of vector is used
+  return tour < t.tour;
+}
 
 // Tour::Iterator::Iterator(vector<Pair>::iterator p) : ptr(p) {}
 // bool Tour::Iterator::operator!=(const Iterator& o) const {

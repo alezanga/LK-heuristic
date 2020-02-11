@@ -5,12 +5,12 @@ solve_heur: true
 
 # Instance generation
 generate_instances: false
-N_min: 10
+N_min: 100
 N_incr: 5
-N_max: 107
+N_max: 100
 
 # Instances to read and solve (must be on single line)
-instances_to_read: [tsp_10, tsp_20, d198]
+instances_to_read: [tsp_100]
 
 # Params for LK
 # Max lenght of alternating path to search for
