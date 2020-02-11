@@ -25,17 +25,16 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 // Global vector with time threshold to visualize when finished
-vector<double> rangeThreshold = {0.1, 1, 10, 100};
-const std::vector<string> fileToRead{"d493.csv"};
+// vector<double> rangeThreshold = {0.1, 1, 10, 100};
 
 /**
  * Returns int index corresponding to the range where 'time' belongs
  */
-unsigned int timeRange(double time) {
-  unsigned int x = 0;
-  while (x < rangeThreshold.size() && (time - rangeThreshold[x]) > 0) x++;
-  return x;
-}
+// unsigned int timeRange(double time) {
+//   unsigned int x = 0;
+//   while (x < rangeThreshold.size() && (time - rangeThreshold[x]) > 0) x++;
+//   return x;
+// }
 
 /**
  * Create instances and write them to csv
@@ -111,7 +110,7 @@ void testTimes(const Params& P) {
     VariadicTable<string, string> rangesTable(
         {"Solving time interval (s)", "Problem size (N)"});
     // Declare a vector to keep track of problem size and time to solve
-    vector<string> rangeSize(rangeThreshold.size() + 1, "");
+    // vector<string> rangeSize(rangeThreshold.size() + 1, "");
     fs::directory_iterator dit = fs::directory_iterator(insd);
     vector<pair<unsigned int, double>> cplex_times;
     vector<pair<unsigned int, double>> cplex_values;
@@ -125,65 +124,37 @@ void testTimes(const Params& P) {
     pair<TSPsolution, double> solopt, solheur;
     unsigned int N = 0;
 
-    if (P.mode == fast) {
-      for (N = P.N_min; N <= P.N_max; N += P.N_incr) {
-        coords.generateRandomPolygons(N);
-        double* cost = coords.costMatrix();
-        if (P.solve_heur) {
-          solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
-          heur_times.push_back({N, solheur.second});
-          heur_values.push_back({N, solheur.first.objVal});
-        }
-        if (P.solve_cplex) {
-          solopt = runOptimal(P, cost, N, sol_cplex);
-          cplex_times.push_back({N, solopt.second});
-          cplex_values.push_back({N, solopt.first.objVal});
-        }
-
-        // Nearest neighbour
-        auto start = std::chrono::system_clock::now();
-        double nncost = nearestNeighbour(cost, N);
-        auto end = std::chrono::system_clock::now();
-        double nn_time = std::chrono::duration<double>(end - start).count();
-        nn_times.push_back({N, nn_time});
-        nn_values.push_back({N, nncost});
-
-        cout << std::endl;
-
-        delete[] cost;
+    for (auto& file : fs::directory_iterator(insd)) {
+      string filename = file.path().filename().string();
+      string stem = file.path().stem().string();
+      if (std::find(P.instances_to_read.begin(), P.instances_to_read.end(),
+                    stem) == P.instances_to_read.end())
+        continue;
+      // Load from file
+      N = coords.loadFromCsv(file.path().string());
+      double* cost = coords.costMatrix();
+      cout << "Loaded file " << filename << std::endl;
+      if (P.solve_heur) {
+        solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        heur_times.push_back({N, solheur.second});
+        heur_values.push_back({N, solheur.first.objVal});
       }
-    } else if (P.mode == load) {
-      for (auto& file : fs::directory_iterator(insd)) {
-        string filename = file.path().filename().string();
-        if (std::find(fileToRead.begin(), fileToRead.end(), filename) ==
-            fileToRead.end())
-          continue;
-        // Load from file
-        N = coords.loadFromCsv(file.path().string());
-        double* cost = coords.costMatrix();
-        cout << "Loaded file " << filename << std::endl;
-        if (P.solve_heur) {
-          solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
-          heur_times.push_back({N, solheur.second});
-          heur_values.push_back({N, solheur.first.objVal});
-        }
-        if (P.solve_cplex) {
-          solopt = runOptimal(P, cost, N, sol_cplex);
-          cplex_times.push_back({N, solopt.second});
-          cplex_values.push_back({N, solopt.first.objVal});
-        }
-        // Nearest neighbour
-        auto start = std::chrono::system_clock::now();
-        double nncost = nearestNeighbour(cost, N);
-        auto end = std::chrono::system_clock::now();
-        double nn_time = std::chrono::duration<double>(end - start).count();
-        nn_times.push_back({N, nn_time});
-        nn_values.push_back({N, nncost});
-
-        cout << std::endl;
-
-        delete[] cost;
+      if (P.solve_cplex) {
+        solopt = runOptimal(P, cost, N, sol_cplex);
+        cplex_times.push_back({N, solopt.second});
+        cplex_values.push_back({N, solopt.first.objVal});
       }
+      // Nearest neighbour
+      auto start = std::chrono::system_clock::now();
+      double nncost = nearestNeighbour(cost, N);
+      auto end = std::chrono::system_clock::now();
+      double nn_time = std::chrono::duration<double>(end - start).count();
+      nn_times.push_back({N, nn_time});
+      nn_values.push_back({N, nncost});
+
+      cout << std::endl;
+
+      delete[] cost;
     }
 
     // Plot data with Python

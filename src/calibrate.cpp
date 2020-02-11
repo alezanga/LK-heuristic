@@ -72,8 +72,7 @@ void calibrateLK(Params P) {
               tot_time += time;
             }
             avg_error = avg_error / iterations;
-            double score =
-                1.0 / ((tot_time * avg_error) + abs(log2(tot_time)) + 1.0);
+            double score = 1.0 / ((tot_time * avg_error) + 1.0);
             if (score > best_score) best_score = score;
             table.addRow({k, max_neigh, back_depth, int_min_depth, int_n_tour,
                           avg_error * 100, best_error * 100, worst_error * 100,
@@ -86,6 +85,7 @@ void calibrateLK(Params P) {
   cal_log << "Best score: " << best_score << "\n";
   delete[] costsM;
   table.print(cal_log);
+  cal_log.close();
 }
 
 int main() {

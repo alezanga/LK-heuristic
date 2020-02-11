@@ -1,12 +1,16 @@
 # Run parameters
 print_console: false
-generate_instances: false
-mode: load
 solve_cplex: false
 solve_heur: true
+
+# Instance generation
+generate_instances: false
 N_min: 10
 N_incr: 5
 N_max: 107
+
+# Instances to read and solve (must be on single line)
+instances_to_read: [tsp_10, tsp_20, d198]
 
 # Params for LK
 # Max lenght of alternating path to search for

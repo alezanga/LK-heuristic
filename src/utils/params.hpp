@@ -1,8 +1,6 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-enum mode_type { load, fast };
-
 class YamlP;
 
 struct Params {
@@ -14,12 +12,13 @@ struct Params {
  public:
   bool print_console;
   bool generate_instances;
-  mode_type mode;
   bool solve_cplex;
   bool solve_heur;
   unsigned int N_min;
   unsigned int N_incr;
   unsigned int N_max;
+
+  std::vector<std::string> instances_to_read;
 
   // Params for LK
 

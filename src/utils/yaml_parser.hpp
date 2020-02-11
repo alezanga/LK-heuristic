@@ -13,7 +13,8 @@
 
 class YamlP {
  private:
-  std::unordered_map<std::string, std::variant<bool, unsigned int, mode_type>>
+  std::unordered_map<std::string,
+                     std::variant<bool, unsigned int, std::vector<std::string>>>
       _params;
 
   static bool is_number(const std::string& s) {
@@ -26,8 +27,34 @@ class YamlP {
     return !s.empty() && (s == "false" || s == "true");
   }
 
-  static bool is_enum(const std::string& s) {
-    return !s.empty() && (s == "fast" || s == "load");
+  static bool is_list(const std::string& s) {
+    return !s.empty() && s.front() == '[' && s.back() == ']';
+  }
+
+  /**
+   * Parse a string in the format: [a, b, c, d]
+   * @param s input string
+   * @return vector of strings with content of list
+   */
+  static std::vector<std::string> parseList(std::string& s) {
+    std::vector<std::string> list;
+    s.pop_back();        // remove ']'
+    s.erase(s.begin());  // remove '['
+    if (s.empty()) {
+      std::cerr << "Warning: no instances to read!";
+      return list;
+    }
+    size_t prev_pos = 0;
+    for (size_t pos = s.find(','); pos != std::string::npos;
+         prev_pos = pos + 1, pos = s.find(',', prev_pos)) {
+      std::string token = s.substr(prev_pos, (pos - prev_pos));
+      trim(token);
+      list.push_back(std::move(token));
+    }
+    std::string last_token = s.substr(prev_pos);
+    trim(last_token);
+    list.push_back(std::move(last_token));
+    return list;
   }
 
   static void ltrim(std::string& s) {
@@ -60,20 +87,23 @@ class YamlP {
     while (std::getline(infile, line)) {
       ltrim(line);
       if (line.empty() || line[0] == '#') continue;
+
+      // Split string into key and value
       std::istringstream iss(line);
       std::string key, value;
-      if (!(iss >> key >> value)) break;  // error
+      std::getline(iss, key, ':');
+      std::getline(iss, value);
       trim(key);
       trim(value);
-      key.pop_back();  // remove ':'
-      // process pair (a,b)
-      std::variant<bool, unsigned int, mode_type> vval;
+
+      // Process pair (key,value)
+      std::variant<bool, unsigned int, std::vector<std::string>> vval;
       if (is_number(value))
         vval = static_cast<unsigned int>(std::stoi(value));
       else if (is_bool(value))
         vval = (value == "true") ? true : false;
-      else if (is_enum(value))
-        vval = (value == "fast") ? fast : load;
+      else if (is_list(value))
+        vval = parseList(value);
       else
         throw std::ios_base::failure("Unsupported value in yaml: " + value);
 
@@ -85,7 +115,8 @@ class YamlP {
     Params p;
     p.print_console = std::get<bool>(_params.at("print_console"));
     p.generate_instances = std::get<bool>(_params.at("generate_instances"));
-    p.mode = std::get<mode_type>(_params.at("mode"));
+    p.instances_to_read =
+        std::get<std::vector<std::string>>(_params.at("instances_to_read"));
     p.solve_cplex = std::get<bool>(_params.at("solve_cplex"));
     p.solve_heur = std::get<bool>(_params.at("solve_heur"));
     p.solve_heur = std::get<bool>(_params.at("solve_heur"));
