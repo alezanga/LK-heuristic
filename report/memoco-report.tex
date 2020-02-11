@@ -1,3 +1,4 @@
+% !TeX spellcheck = en_GB
 % A LaTeX (non-official) template for ISAE projects reports
 % Copyright (C) 2014 Damien Roque
 % Version: 0.2
@@ -14,6 +15,10 @@
 \usepackage{dirtree}
 %\usepackage{tikz}
 %\usetikzlibrary{shapes,arrows}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{tabularx}
+\usepackage{longtable}                     
+\usepackage{ltxtable} 
 \usepackage{pgfplots}
 \pgfplotsset{compat=newest}
 \pgfplotsset{plot coordinates/math parser=false}
@@ -23,20 +28,6 @@
 set decimal separator={,\!},
 1000 sep={\,},
 }
-\usepackage{ifthen}
-\usepackage{ifpdf}
-\ifpdf
-\usepackage[pdftex]{hyperref}
-\else
-\usepackage{hyperref}
-\fi
-\usepackage{color}
-\hypersetup{%
-colorlinks=true,
-linkcolor=black,
-citecolor=green,
-urlcolor=blue}
-
 \renewcommand{\baselinestretch}{1.05}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -77,6 +68,19 @@ urlcolor=blue}
 \usepackage{bm}
 \usepackage{multirow}
 \usepackage[footnote]{acronym}
+\usepackage{ifthen}
+\usepackage{ifpdf}
+\ifpdf
+\usepackage[pdftex,backref=page]{hyperref}
+\else
+\usepackage[backref=page]{hyperref}
+\fi
+\hypersetup{%
+	colorlinks=true,
+	linkcolor=blue,
+	citecolor=green,
+	urlcolor=blue}
+\usepackage{cleveref}
 
 \newcommand*{\SET}[1]  {\ensuremath{\mathbf{#1}}}
 \newcommand*{\VEC}[1]  {\ensuremath{\boldsymbol{#1}}}
@@ -132,6 +136,13 @@ urlcolor=blue}
 \newcommand{\Image}{\ensuremath{\text{Im}}}
 \newcommand{\Span}{\ensuremath{\text{Span}}}
 
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{%
+	\ifcase #1 (Not cited.)%
+	\or        (Cited on page~#2.)%
+	\else      (Cited on pages~#2.)%
+	\fi}
+
 \newtheoremstyle{break}
   {11pt}{11pt}%
   {\itshape}{}%
@@ -151,6 +162,8 @@ urlcolor=blue}
 %\theoremstyle{plain}
 \newtheorem{propriete}{Propriété}[section]
 \newtheorem{exemple}{Exemple}[section]
+\definecolor{mylred}{HTML}{ffe4e1}
+\definecolor{myred}{HTML}{b63e33}
 
 \parskip=5pt
 %\sloppy
@@ -162,6 +175,7 @@ urlcolor=blue}
 %%%%%%%%%%%%%%%%%%
 
 \begin{titlepage}
+\thispagestyle{empty}
 \begin{center}
 	
 %{\large University of Padua}\\[0.5cm]
@@ -211,19 +225,27 @@ urlcolor=blue}
 %\frontmatter
 
 %\clearpage
-\tableofcontents
 
+\begingroup
+\hypersetup{colorlinks=false, linkcolor=black}
+\thispagestyle{empty}
+\tableofcontents
 %\clearpage
+\thispagestyle{empty}
 \listoffigures
+\thispagestyle{empty}
+\listoftables
+\endgroup
 
 %%%%%%%%%%%%%%%%
 %%% Abstract %%%
 %%%%%%%%%%%%%%%%
 
-%\thispagestyle{empty}
+\thispagestyle{empty}
 \clearpage
 %\vspace*{\fill}
 \noindent\rule[2pt]{\textwidth}{0.5pt}\\
+\thispagestyle{empty}
 \section*{Abstract}
 The following report documents the course project, which demanded the development of two algorithms to solve the Travelling Salesman Problem. The first algorithm uses the C IBM CPLEX API to obtain the exact solution. The second algorithm is an heuristic method, whose functioning is inspired by the Lin-Keringhan heuristic.
 
