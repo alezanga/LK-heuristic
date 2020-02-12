@@ -8,13 +8,16 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel} % If you write in English
-\usepackage{a4wide}
+\usepackage[a4paper,bindingoffset=0in,%
+	left=0.8in,right=0.8in,top=1.4in,bottom=1.2in,%
+	footskip=.25in]{geometry}
 \usepackage{graphicx}
 \graphicspath{{img/}}
 \usepackage{subfig}
 \usepackage{dirtree}
 %\usepackage{tikz}
 %\usetikzlibrary{shapes,arrows}
+\usepackage{array}
 \usepackage[dvipsnames,table]{xcolor}
 \usepackage{tabularx}
 \usepackage{longtable}                     
@@ -164,6 +167,8 @@ set decimal separator={,\!},
 \newtheorem{exemple}{Exemple}[section]
 \definecolor{mylred}{HTML}{ffe4e1}
 \definecolor{myred}{HTML}{b63e33}
+
+\newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}
 
 \parskip=5pt
 %\sloppy

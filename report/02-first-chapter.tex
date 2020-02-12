@@ -42,10 +42,11 @@ During each iteration, given a feasible tour, the algorithm repeatedly performs 
 So at each iteration the algorithm tries to determine the largest set $X=\{x_1, x_2, ..., x_j\}$ and $Y=\{y_1, y_2, ..., y_j\}$ such that if edges in $X$ (also called the \emph{broken} edges) are removed and replaced by $Y$ (the \emph{joined} edges) the produced tour is a feasible improved (e.g. less costly) solution. Of course, a naive brute force algorithm searching for this sets, would quickly become impractical due to the exponential running time. In order to produce a reasonably efficient local search procedure, the algorithm reduce the search space using the following criteria:
 \begin{enumerate}
 	\item \emph{Sequential exchange criterion}: each pair of edges $(x_i, y_i)$ and $(y_i, x_{i+1})$ must share one vertex. If $t_1$ and $t_2$ are the vertices of edge $x_1$, then in general for all $i \ge 1$ exchanges are performed this way: $x_i=(t_{2i-1}, t_{2i})$ and $y_i=(t_{2i}, t_{2i+1})$ and $x_{i+1}=(t_{2i+1}, t_{2i+2})$.\\ All \emph{sequential} k-opt moves can be found by concatenating smaller sequential moves, but \emph{non sequential} moves can not be found with this algorithm. An example of such a move is given in \cref{fig:doublebridge}.
-	\item \emph{Feasibility criterion}: for every $i \ge 3$, $x_i=(t_{2i-1}, t_{2i})$ is chosen so that if $t_{2i}$ is connected to $t_1$ the resulting configuration is a tour (e.g. a feasible solution). It can be easily seen that at most one choice for $x_i$ satisfies this constraint. Exceptionally, when $i=2$, the originally proposed algorithm allowed for the choice of an $x_i$ which violates this rule. This was done to strengthen the procedure, while not allowing backtracking at every levels significantly reduce running time;
+	\item \emph{Feasibility criterion}: for every $i \ge 3$, $x_i=(t_{2i-1}, t_{2i})$ is chosen so that if $t_{2i}$ is connected to $t_1$ the resulting configuration is a tour (e.g. a feasible solution). It can be easily seen that at most one choice for $x_i$ satisfies this constraint. Exceptionally, when $i=2$, the originally proposed algorithm allowed for the choice of an $x_i$ which violates this rule. According to the original paper this was done to strengthen the procedure, since allowing backtracking at every levels would significantly increase the running time;
 	\item \emph{Positive gain criterion}: let $g_i=cost(x_i) - cost(y_i)$ be the gain by exchanging two edges, and let $G_i=g_1+g_2+...+g_i$ be the partial sum of the gains up to the $i^{th}$ exchange. This criterion requires that each $y_j$ is chosen such that $G_j$ is positive. This choice is justified in \cite{Helsgaun2000};
 	\item \emph{Disjunctivity criterion}: sets $X$ and $Y$ must be disjoint.
 \end{enumerate}
+In the implemented algorithm, the move size threshold which allows for the exceptional violation of the \emph{feasibility criterion} (set to $2$ in the paper), is not fixed but it can be modified in the configuration file \texttt{config.yml}. In this way the influence of this parameter on the solution quality could be tested and optimized.
 
 \begin{figure}[]
 	\centering
@@ -53,6 +54,27 @@ So at each iteration the algorithm tries to determine the largest set $X=\{x_1, 
 	\caption{A non sequential \emph{double bridge} move with $k=4$}
 	\label{fig:doublebridge}
 \end{figure}
+
+\subsection{Adopted stopping criterion}
+The algorithm uses the same stopping criterion suggested in the original paper. In particular, when the algorithm finds a feasible tour with a move of size $k$, it checks whether the total gain is the best seen so far. If it is then it is the best improvement seen and it saves the current solution, and tries to improve further with a $k+1$ move. If this does not improve the solution the algorithm returns the solution it saved. On the other hand, if the size $k$ move yields a feasible tour which is not the best seen so far, the algorithm stops, since it knows there is a better move, with size smaller than $k$, that produces a better tour.\\
+It's worth to say that this is not the only possible criterion to stop the search. Other more patient and less greedy strategies could be used.
+
+\subsection{Neighbourhood function}
+In a local search algorithm the neighbourhood function describes the possible moves that the algorithm may perform at every step.\\
+In the described algorithm, for a given $i$, a move consists in breaking an edge of the tour $x_i$ and replacing it with  and edge $y_i$ chosen with the criteria described in \cref{chap:heuris}.
+If we fix the vertex $t_{2i-1}$ belonging to joined edge $y_{i-1}$, there are exactly two edges that can be broken. That's because the \emph{sequential exchange criterion} requires that $x_i$ must share an endpoint with $y_{i-1}$ and this endpoint is exactly $t_{2i-1}$. Additionally, by the \emph{feasibility criterion}, there is only one choice of $x_i$ that will produce a feasible tour, while breaking the other will inevitably split the graph into two connected components. \\
+Starting from vertex $t_{2i-1}$ the algorithm analyses the two possibilities giving the precedence to the edge with higher cost, since is the best one to remove. Only if the feasibility criterion is violated the procedure will try to remove the other edge.\\
+
+In order to choose an edge $y_i$, the algorithm finds all possible edges starting in $t_{2i}$ which are
+\begin{itemize}
+	\setlength\itemsep{0.05em}
+	\item not part of the current solution;
+	\item not already broken (i.e. $\notin X$);
+	\item not already joined (i.e. $\notin Y$).
+\end{itemize}
+A simple approach would be to choose as $y_i$ the candidate edge with the lowest cost, since we want to maximize the gain. The paper suggests using a less greedy approach, by looking also at the successive edge $x_{i+1}$. This has the additional benefit of avoiding useless search, as would happen by joining a promising candidate only to find out when selecting the next edge to break that no such operation is possible (for example because the only alternative has already been broken). \\
+Thus for each candidate edge to join, the possible $x_{i+1}$ are analysed, and the potential gain of adding $y_i$ and removing $x_{i+1}$ is computed. Since the algorithm does not know which choice of $x_{i+1}$ gives the feasible tour, if neither choice can be discarded because of other reasons (e.g. already broken, intensification constraints), both choices are considered and the potential gain is the average of the two gains. So the potential gain is the average gain to expect by joining $y_i$ and breaking $x_{i+1}$. Ideally, the neighbourhood function should predict which candidate $x_{i+1}$ is the actual feasible choice that the algorithm will eventually make. Unfortunately, checking this for every possible candidate is quite costly for instances with considerable size, since checking if a sequence of edges represent a feasible tour takes time $O(N)$ on average, and the number of candidates grows linearly with $N$ too.\\
+Instead of using the average potential gain to rank the candidates for joining, two alternative approaches using the worst gain and the best possible gain has been tested. Calibration tests on an instance of 90 points determined that this approach produced slightly better results than the others.
 
 %\begin{enumerate}
 %	\item Start from a (possibly random) feasible solution;
@@ -68,52 +90,49 @@ So at each iteration the algorithm tries to determine the largest set $X=\{x_1, 
 %	\item Repeat step 4. When no improving solution can be found set the current best solution as starting solution and restart from step 2.
 %\end{enumerate}
 
-As reported in \cite{LinK73}, various enhancements are possible. The next sections describe some details and improvement of the implemented algorithm.
+\subsection{Enhancements}
+This basic algorithm scheme can be enhanced in many ways. The next sections describe some additional strategies implemented in this project.
 
-\subsection{Stopping criterion}
-The algorithm uses the same stopping criterion suggested in the original paper. In particular, when the algorithm finds a feasible tour with a move of size $k$, it checks whether the total gain is the best seen so far. If it is then it is the best improvement seen and it saves the current solution, and tries to improve further with a $k+1$ move. If this doesn't improve the solution the algorithm returns the solution it saved. On the other hand, if the size $k$ move yields a feasible tour which is not the best seen so far, the algorithm stops, since it knows there is a better move, with size smaller than $k$, that produces a better tour.
-
-\subsection{Search intensification}
-\label{ssec:intensification}
+\subsubsection{Search intensification}
+\label{sssec:intensification}
 Between the iterations the algorithm may find some 'good' edges which belongs to the optimal solution or to some reasonably good ones. Subsequently some time may be lost by repeatedly breaking and adding them, while not exploring some more profitable moves. \\
 In addition these 'good' edges are likely to be present in many of the best solutions (local optima) found between iterations. In order to direct the search towards more promising solutions, the algorithm keeps track of the edges shared by best $S$ solutions by computing their intersection.\\ 
 On the other hand, if the top-S solutions do not include the global optimum, this approach  may prevent the algorithm from breaking some edges which do not belong to the optimum, thus preventing the algorithm from finding it.\\ To mitigate this problem, the intensification procedure is applied only after a specified number of improving moves (i.e. after a fixed $i$). This means that the algorithm has a way to escape this additional constraint for a small number of moves, allowing it to recover from previous sub-optimal choices.\\ 
 Additionally, after a local optima is found, the objective value is tested to see if it is better than one of the top-S solutions and in this case the worst solution is replaced with the new one and the intersection is updated.\\
 A max-heap data structure is used in order to efficiently replace the worst (i.e. with higher objective value) local optima, and the collection of edges of each tour is maintained in a \texttt{std::set} ordered container, which allows the intersection procedure to take time $O(N\cdot S)$ where $N$ is the number of edges in a feasible tour.\\
-In choosing the parameter $S$ it is important to keep in mind that intensification is done only after $S$ local optima are found, so one should ensure that this number is suitable for the problem dimension, because a very large number with a small problem would probably be ineffective.
+In choosing the parameter $S$ it is important to keep in mind that intensification is done only after $S$ local optima are found, so one should ensure that this number is suitable for the problem dimension, since a very large number with a small problem would probably be ineffective.
 
-\subsection{Early stopping}
+\subsubsection{Recognizing duplicate solutions}
 The authors of the algorithm stated that 30\% to 50\% of running time could be saved by keeping track of previous local optima and stopping the algorithm if the current local optima is the same seen before. This is justified by the fact that if the algorithm couldn't improve this solution before, it's unlikely it can do it now. While this sounds reasonable, in the proposed implementation no particular speed-up was registered. This may be due to the very different computing capabilities of the hardware used in 1973.\\
 Since trying to improve a previously found local optima will likely fail, the proposed algorithm adopts a slightly different strategy in this eventuality: instead of stopping, it restarts from a different starting edge and proceeds normally until it finds a different solution, or it determines no better tour exists. While this does not guarantee an improvement in running time, it makes the algorithm redirect the search in a different direction, which is probably more useful that exploring the neighbourhood of a previous solution.\\
 To do this, an \texttt{std::set} data structure is used, which maintains a sorted collection (ordered by tour cost) of all the feasible tours found at each iteration. This container guarantees logarithmic insertion and search operations.\\
-This strategy could be improved by ensuring that a reasonable number of edges belonging to the previously encountered solution, are not added again.
-
-\subsection{Neighbourhood function}
-The algorithm uses a neighbourhood function to determine which move to perform: for a given $i$ a move consists in the selection of an edge $x_i$ to remove and an edge $y_i$ to add to the tour, chosen with the criteria described in \cref{chap:heuris}.
-There are exactly two choices for each node to remove (fixing the vertex $t_{2i-1}$), since by the \emph{sequential exchange criterion} $x_i$ must share an endpoint with $y_{i-1}$. Additionally, by the \emph{feasibility criterion}, there is only one choice of $x_i$ that will produce a feasible tour.\\
-Starting from vertex $t_{2i-1}$ the algorithm analyses the two possibilities giving the precedence to the most gainful one (the edge with higher cost is the best one to remove). Only if the feasibility criterion is violated the procedure will try to remove the other edge.\\
-
-In order to choose an edge $y_i$, the algorithm finds all possible edges starting in $t_{2i}$ which are 
-\begin{itemize}
-	\setlength\itemsep{0.05em}
-	\item not part of the current solution;
-	\item not already broken;
-	\item not already joined.
-\end{itemize}
-In addition for each candidate edge $y_i$, the following two candidates for $x_{i+1}$ are analysed, and the potential gain of adding $y_i$ and removing $x_{i+1}$ is computed. Since the algorithm does not know which choice of $x_{i+1}$ gives the feasible tour, in analysing the two alternatives for $x_{i+1}$, the one with higher cost is considered. So the potential gain is the best possible gain by removing $y_i$ and adding $x_{i+1}$. This score is used to rank the candidates for $y_i$ and is meant to avoid bad choices based on too greedy criteria, like basing the choice only on the cost of the edge to add without any lookahead.
+As a possible improvement to this strategy, one could keep track of the edges modified while converging to the previously encountered solution, and make sure that at least some of these are not added again, which can potentially lead to the same solution again, or to a very similar one.
 
 \subsection{Random restart}
-The described heuristic is run from a randomized initial solution. Starting from a better solution has been tried, but no significant improvements have been noticed. \\ Since the initial random tour has a significant impact on the heuristic performance ...
+The described heuristic is run from a randomized initial solution. Using an initial solution generated with a fast constructive heuristic has been tried, and a faster convergence has been registered, even though the produced solution was often not better than the solution generated from a random initial solution.
+Despite this the starting tour has a significant impact on the heuristic performance, since it determines the edges that will be tried for the first move. As can be seen by the calibration tests in the next section, the algorithm often does not explore more than the first two candidates to be joined. This explains why the initial tour greatly contributes to the final result.\\
+By restarting the heuristic many times on the same instances of the synthetic dataset, on average, the heuristic will produce tours 3-4\% from the optimal one. But the best solution found during a reasonable number of restarts is usually much closer to the optimal one. This strategy has been implemented in the file \texttt{IteratedLK.cpp}, where the procedure \texttt{iterated\_LK} can be used for this purpose, by setting the desired number of restarts in the \texttt{config.yml} configuration file (parameter \texttt{LK\_iterations}). Further considerations on the best number of iterations are discussed on the calibration section.
 
 \subsection{Hyperparameters}
 Table \ref{tab:hyperparameters} includes a description of each parameter to be set in file \texttt{config.yml} before starting the heuristic. Calibration of this hyperparameters are discussed in the next section.
 
 \LTXtable{\linewidth}{parameters}
 
-
-
+This heuristic works well in practice, but does not offer strong theoretical guarantees on the worst possible scenario. Since at every move the heuristic considers at most \texttt{max\_neighbours} candidates for joining, and it may do up to \texttt{K} moves for iteration, the worst case complexity of a single search for the best possible move is $O(max\_neighbours^K)$. This process may be repeated for up to \texttt{I} iterations. Using random restarts this procedure is repeated \texttt{LK\_iterations} times. Using high \texttt{backtracking\_threshold} value gives the algorithm the possibility to violate the feasibility criterion and try more moves. In order to greatly reduce the running time this parameter should stay low, typically between 2 and 10 in my tests.
+The intensification parameters does not seem to influence much the running time, but the calibration procedure showed that some values seems to work better than others.
 
 \subsubsection{Calibration}
+Some parameters in \cref{tab:hyperparameters} may affect the running time and the solution quality.
+In order to select the best combination they were calibrated by computing a score on a random instance with 90 points. 
+The score is obtained by iterating the heuristic 10 times on the same dataset with 90 points, and takes into account the average percentage relative error (w.r.t. the optimal solution computed using the exact algorithm), called $ARE$ and the total execution time for the 10 iterations, called $TT$. The score is given by \cref{eq:score}.
+\begin{equation}
+	\text{Score} = \cfrac{1}{1 + (ARE * TT)}
+	\label{eq:score}
+\end{equation}
+Table \ref{tab:calibration} reports the results on the 90-point instance with all the parameters tried.
+
+
+\LTXtable{\linewidth}{calibration}
 
 
 
