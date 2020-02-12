@@ -248,9 +248,10 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
           // belonging to the tour can be added
           // Compute potential gain of removing x_i+1 and adding y_i
           double delta_g = C[n * N + succ_n] - C[t2i * N + n];
-          if (neighbours[n].second == -1 || neighbours[n].first < delta_g)
+          if (neighbours[n].second == -1)
             neighbours[n] = {delta_g, n};
-          // Else skip update and go on
+          else
+            neighbours[n].first = (neighbours[n].first + delta_g) / 2;
         }
       }
     }

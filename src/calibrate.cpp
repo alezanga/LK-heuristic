@@ -21,10 +21,10 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 vector<unsigned int> Ks = {100};
-vector<unsigned int> MNs{2, 5, 10};
-vector<unsigned int> BTs{2, 3, 4, 5};
-vector<unsigned int> IMDs{4, 5, 8, 10};
-vector<unsigned int> INTs{20, 60, 100, 200};
+vector<unsigned int> MNs{2, 5};
+vector<unsigned int> BTs{4, 5};
+vector<unsigned int> IMDs{5, 8, 10};
+vector<unsigned int> INTs{20, 40, 60};
 
 void calibrateLK(Params P) {
   unsigned int N = 90;
