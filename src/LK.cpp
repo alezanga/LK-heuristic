@@ -243,7 +243,7 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
             !intensify || i + 1 < P.intens_min_depth ||
             !std::binary_search(good_edges.second.cbegin(),
                                 good_edges.second.cend(), Pair(n, succ_n));
-        if (!broken(L, n, succ_n) && removable) {
+        if (succ_n != t1 && !broken(L, n, succ_n) && removable) {
           // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
           // Compute potential gain of removing x_i+1 and adding y_i

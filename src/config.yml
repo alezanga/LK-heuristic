@@ -26,4 +26,4 @@ intens_min_depth: 4
 # Number of tours to consider for intensification
 intens_n_tours: 20
 # Number of random restarts
-LK_iterations: 5
+LK_iterations: 60
