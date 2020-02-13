@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg>
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+	<style>
+    .txt { font: italic 40px Arial; }
+  </style>
+ 	<g>
+  	<title>background</title>
+  	<rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ 	</g>
+ 	<g style="stroke-width:3; stroke:#000000; fill:none">
+  	<title>Layer 1</title>
+  	<polyline points="126.67515563964844,163.6924285888672 163.6924285888672,127.84674072265625 163.6924285888672,77.15325164794922 126.67515563964844,41.307559967041016"/>
+  	<polyline stroke="black" fill="none" points="74.3248291015625,163.6924285888672 37.30756378173828,127.84674072265625 37.30756378173828,77.15325164794922"/>
+ 	</g>
+ 	<g style="fill:#000000">
+ 		<text x="122" y="180" class="txt">t1</text>
+ 		<text x="70" y="180" class="txt">t2</text>
+ 		<text x="70" y="30" class="txt">t3</text>
+ 		<text x="45" y="55" class="txt">a</text>
+ 		<text x="97" y="30" class="txt">b</text>
+ 		<text x="97" y="180" class="txt">x<tspan baseline-shift="sub">1</tspan></text>
+ 		<text x="80" y="105" class="txt">y<tspan baseline-shift="sub">1</tspan></text>
+ 	</g>
+ 	<g style="stroke-width:2; fill:none">
+		<line stroke="#008000" x1="74.3248291015625" y1="163.6924285888672" x2="74.3248291015625" y2="41.307559967041016"></line>
+	  <line stroke="orange" x1="126.67515563964844" y1="41.307559967041016" x2="74.3248291015625" y2="41.307559967041016"></line>
+	  <line stroke="orange" x1="37.30756378173828" y1="77.15325164794922" x2="74.3248291015625" y2="41.307559967041016"></line>
+	</g>
+	<g style="stroke-width:4; stroke:#000000; fill:#000000">
+		<circle r="2" cx="126.67515563964844" cy="163.6924285888672"></circle>
+		<circle r="2" cx="126.67515563964844" cy="41.307559967041016"></circle>
+		<circle r="2" cx="163.6924285888672" cy="127.84674072265625"></circle>
+		<circle r="2" cx="163.6924285888672" cy="77.15325164794922"></circle>
+		<circle r="2" cx="74.3248291015625" cy="163.6924285888672"></circle>
+		<circle r="2" cx="74.3248291015625" cy="41.307559967041016"></circle>
+		<circle r="2" cx="37.30756378173828" cy="127.84674072265625"></circle>
+		<circle r="2" cx="37.30756378173828" cy="77.15325164794922"></circle>
+	</g>
+</svg>

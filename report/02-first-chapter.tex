@@ -2,6 +2,7 @@
 % !TeX root = memoco-report.tex
 
 \section{Dataset generation}
+\label{sec:datasetgen}
 In order to test the two algorithms, a procedure to build a synthetic dataset of different sizes has been provided.\\ 
 Given a sequence of holes to be drilled in an electric panel the algorithms should be used to find a sequence of holes that minimizes the cost of drilling the whole panel, where the costs are given by the euclidean distances between holes. For simplicity it is assumed that the cost of drilling every hole can be ignored.\\
 The procedure to generate the TSP instances receives as an input a number $N$ of points (which symbolise holes) and generates $N$ pairs representing the coordinates in space of the points on a $N\times N$ square canvas. These points are distributed in a way to resemble the regularity usually found in the disposition of holes in electric panel.\\ 
@@ -40,14 +41,6 @@ The linear programming model is built in the function \texttt{setupLP} in file \
 The implemented heuristic is inspired by a popular local search method called Lin-Kernighan heuristic, originally proposed in 1973 in \cite{LinK73}. The algorithm can be considered a generalization of the k-opt algorithm: one of the drawbacks of this algorithm is that the parameter $k$ must be fixed in advance. Instead, the Lin-Kerighan algorithm decides at each iteration, for ascending values of $k$, whether an interchange of $k$ edges provides a better solution. Thus, the algorithm is specified in terms of exchanges (or moves) that can convert one tour into another: given a feasible interchange of $k$ edges (a \textit{k-move}), the algorithm tries to determine if there exists a $k+1$-move that improves the tour further. 
 During each iteration, given a feasible tour, the algorithm repeatedly performs exchanges that reduce the length of the current tour, until a tour is reached for which no exchange yields an improvement. This process may be repeated many times from initial tours generated in some possibly randomized way \cite{Helsgaun2000}.\\
 So at each iteration the algorithm tries to determine the largest set $X=\{x_1, x_2, ..., x_j\}$ and $Y=\{y_1, y_2, ..., y_j\}$ such that if edges in $X$ (also called the \emph{broken} edges) are removed and replaced by $Y$ (the \emph{joined} edges) the produced tour is a feasible improved (e.g. less costly) solution. Of course, a naive brute force algorithm searching for this sets, would quickly become impractical due to the exponential running time. In order to produce a reasonably efficient local search procedure, the algorithm reduce the search space using the following criteria:
-\begin{enumerate}
-	\item \emph{Sequential exchange criterion}: each pair of edges $(x_i, y_i)$ and $(y_i, x_{i+1})$ must share one vertex. If $t_1$ and $t_2$ are the vertices of edge $x_1$, then in general for all $i \ge 1$ exchanges are performed this way: $x_i=(t_{2i-1}, t_{2i})$ and $y_i=(t_{2i}, t_{2i+1})$ and $x_{i+1}=(t_{2i+1}, t_{2i+2})$.\\ All \emph{sequential} k-opt moves can be found by concatenating smaller sequential moves, but \emph{non sequential} moves can not be found with this algorithm. An example of such a move is given in \cref{fig:doublebridge}.
-	\item \emph{Feasibility criterion}: for every $i \ge 3$, $x_i=(t_{2i-1}, t_{2i})$ is chosen so that if $t_{2i}$ is connected to $t_1$ the resulting configuration is a tour (e.g. a feasible solution). It can be easily seen that at most one choice for $x_i$ satisfies this constraint. Exceptionally, when $i=2$, the originally proposed algorithm allowed for the choice of an $x_i$ which violates this rule. According to the original paper this was done to strengthen the procedure, since allowing backtracking at every levels would significantly increase the running time;
-	\item \emph{Positive gain criterion}: let $g_i=cost(x_i) - cost(y_i)$ be the gain by exchanging two edges, and let $G_i=g_1+g_2+...+g_i$ be the partial sum of the gains up to the $i^{th}$ exchange. This criterion requires that each $y_j$ is chosen such that $G_j$ is positive. This choice is justified in \cite{Helsgaun2000};
-	\item \emph{Disjunctivity criterion}: sets $X$ and $Y$ must be disjoint.
-\end{enumerate}
-In the implemented algorithm, the move size threshold which allows for the exceptional violation of the \emph{feasibility criterion} (set to $2$ in the paper), is not fixed but it can be modified in the configuration file \texttt{config.yml}. In this way the influence of this parameter on the solution quality could be tested and optimized.
-
 \begin{figure}[]
 	\centering
 	\includegraphics[width=6cm]{double-bridge}
@@ -55,11 +48,38 @@ In the implemented algorithm, the move size threshold which allows for the excep
 	\label{fig:doublebridge}
 \end{figure}
 
+\begin{enumerate}
+	\item \emph{Sequential exchange criterion}: each pair of edges $(x_i, y_i)$ and $(y_i, x_{i+1})$ must share one vertex. If $t_1$ and $t_2$ are the vertices of edge $x_1$, then in general for all $i \ge 1$ exchanges are performed this way: $x_i=(t_{2i-1}, t_{2i})$ and $y_i=(t_{2i}, t_{2i+1})$ and $x_{i+1}=(t_{2i+1}, t_{2i+2})$.\\ All \emph{sequential} k-opt moves can be found by concatenating smaller sequential moves, but \emph{non sequential} moves can not be found with this algorithm. An example of such a move is given in \cref{fig:doublebridge}.
+	\item \emph{Feasibility criterion}: for every $i \ge 3$, $x_i=(t_{2i-1}, t_{2i})$ is chosen so that if $t_{2i}$ is connected to $t_1$ the resulting configuration is a tour (e.g. a feasible solution). It can be seen that at most one choice for $x_i$ satisfies this constraint, as showed in \cref{fig:feasibility-moves}. Exceptionally, when $i=2$, the originally proposed algorithm allowed for the choice of an $x_i$ which violates this rule. According to the original paper this was done to strengthen the procedure, since allowing backtracking at every levels would significantly increase the running time;
+	\item \emph{Positive gain criterion}: let $g_i=cost(x_i) - cost(y_i)$ be the gain by exchanging two edges, and let $G_i=g_1+g_2+...+g_i$ be the partial sum of the gains up to the $i^{th}$ exchange. This criterion requires that each $y_j$ is chosen such that $G_j$ is positive. This choice is justified in \cite{Helsgaun2000};
+	\item \emph{Disjunctivity criterion}: sets $X$ and $Y$ must be disjoint.
+\end{enumerate}
+In the implemented algorithm, the move size threshold which allows for the exceptional violation of the \emph{feasibility criterion} (set to $2$ in the paper), is not fixed but it can be modified in the configuration file \texttt{config.yml}. In this way the influence of this parameter on the solution quality could be tested and optimized.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[c]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{path-choices}
+		\caption{The two possibles edges to break after choosing $y_1$: $a$, $b$}
+	\end{subfigure}
+	\begin{subfigure}[c]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{path-wrong}
+		\caption{Breaking edge $b$ violates the feasibility criterion}
+	\end{subfigure}
+	\begin{subfigure}[c]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{path-right}
+		\caption{Breaking edge $a$ allows to close the tour correctly}
+	\end{subfigure}
+	\caption{Only one candidate for $x_i$ satisfies the feasibility criterion, which is enforced for $i$ greater than a fixed threshold value. In this case breaking edge $a$ is the right choice, since removing edge $b$ and relinking with edge $r=(t_4,t_1)$ would not produce a feasible tour.}
+	\label{fig:feasibility-moves}
+\end{figure}
+
 \subsection{Adopted stopping criterion}
 The algorithm uses the same stopping criterion suggested in the original paper. In particular, when the algorithm finds a feasible tour with a move of size $k$, it checks whether the total gain is the best seen so far. If it is then it is the best improvement seen and it saves the current solution, and tries to improve further with a $k+1$ move. If this does not improve the solution the algorithm returns the solution it saved. On the other hand, if the size $k$ move yields a feasible tour which is not the best seen so far, the algorithm stops, since it knows there is a better move, with size smaller than $k$, that produces a better tour.\\
 It's worth to say that this is not the only possible criterion to stop the search. Other more patient and less greedy strategies could be used.
 
 \subsection{Neighbourhood function}
+\label{ssec:neighbourhood}
 In a local search algorithm the neighbourhood function describes the possible moves that the algorithm may perform at every step.\\
 In the described algorithm, for a given $i$, a move consists in breaking an edge of the tour $x_i$ and replacing it with  and edge $y_i$ chosen with the criteria described in \cref{chap:heuris}.
 If we fix the vertex $t_{2i-1}$ belonging to joined edge $y_{i-1}$, there are exactly two edges that can be broken. That's because the \emph{sequential exchange criterion} requires that $x_i$ must share an endpoint with $y_{i-1}$ and this endpoint is exactly $t_{2i-1}$. Additionally, by the \emph{feasibility criterion}, there is only one choice of $x_i$ that will produce a feasible tour, while breaking the other will inevitably split the graph into two connected components. \\
@@ -118,26 +138,21 @@ Table \ref{tab:hyperparameters} includes a description of each parameter to be s
 
 \LTXtable{\linewidth}{parameters}
 
-This heuristic works well in practice, but does not offer strong theoretical guarantees on the worst possible scenario. Since at every move the heuristic considers at most \texttt{max\_neighbours} candidates for joining, and it may do up to \texttt{K} moves for iteration, the worst case complexity of a single search for the best possible move is $O(max\_neighbours^K)$. This process may be repeated for up to \texttt{I} iterations. Using random restarts this procedure is repeated \texttt{LK\_iterations} times. Using high \texttt{backtracking\_threshold} value gives the algorithm the possibility to violate the feasibility criterion and try more moves. In order to greatly reduce the running time this parameter should stay low, typically between 2 and 10 in my tests.
-The intensification parameters does not seem to influence much the running time, but the calibration procedure showed that some values seems to work better than others.
+This heuristic works well in practice, but may require some tuning to be usable with bigger problems, since some parameters can significantly increase the running time. To determine the next move, the heuristic considers at most \texttt{max\_neighbours} candidates for joining, and it may do up to \texttt{K} moves per iteration, so the worst case complexity of a single search for the best possible move is $O(max\_neighbours^K)$. This process may be repeated for up to \texttt{I} iterations. Using random restarts this entire procedure is repeated exactly \texttt{LK\_iterations} times. High \texttt{backtracking\_threshold} values allow the algorithm to violate the feasibility criterion and try more moves, but will also require more time. Low values, like 3 or 4, worked well during testing.\\
+If the algorithm spend too much searching for a move (i.e. searching for an exchange), the \texttt{K} parameter should be lowered. On the other hand, if the algorithm tends to do too many iterations, this number may be limited by lowering \texttt{I}. Reducing \texttt{K} and increasing \texttt{I} allow the algorithm to do a bigger number of smaller improvements. On the other hand increasing \texttt{K} and reducing \texttt{I} will allow for a lower number of better improvements.
 
 \subsubsection{Calibration}
-Some parameters in \cref{tab:hyperparameters} may affect the running time and the solution quality.
-In order to select the best combination they were calibrated by computing a score on a random instance with 90 points. 
-The score is obtained by iterating the heuristic 10 times on the same dataset with 90 points, and takes into account the average percentage relative error (w.r.t. the optimal solution computed using the exact algorithm), called $ARE$ and the total execution time for the 10 iterations, called $TT$. The score is given by \cref{eq:score}.
+Some parameters in \cref{tab:hyperparameters} may affect the running time and the solution quality. In order to determine how much this parameters influenced this metrics and to select a good combination, tests were run on a single instance of the dataset. Table \ref{tab:calibration} reports the results of the calibration procedure on an instance with 90 points. Listed information includes the average percentage error, whether the optimal solution was found, the average number of iterations and the total time required for the 10 iterations.
+The final score is obtained by iterating the heuristic 10 times on the same instance and takes into account the average percentage relative error (w.r.t. the optimal solution computed using the exact algorithm), called $ARE$ and the total execution time for the 10 iterations, called $TT$. The score is given by \cref{eq:score}.
 \begin{equation}
 	\text{Score} = \cfrac{1}{1 + (ARE * TT)}
 	\label{eq:score}
 \end{equation}
-Table \ref{tab:calibration} reports the results on the 90-point instance with all the parameters tried.
-
+These results were obtained by using all the features described before, and by compiling the final executable with \texttt{-O3} optimization flag.
+Other tests, which are not reported here, were run using the other two ranking strategies to sort the candidates to be joined, discussed in \cref{ssec:neighbourhood}. Strategies using the best and average gain performed similarly, while the strategy sorting by worst gain performed poorly. Three different calibrations for all three strategies has been run and the average gain strategy was selected because it reached the optimal solution more frequently then the best gain one.\\
+As can e seen in \cref{tab:calibration}, considering more neighbours during the selection of the edge to join (5 instead of 2) results in a lower average error and higher running time. However with value set to 5 the optimal value was found in all cases but one.\\
+Additional tests were done with \textit{backtracking depth} set to 2 and 3. Lowering this parameter reduce running time and also the frequency of finding the optimum, so in the final tests the value was set to 4.\\
 
 \LTXtable{\linewidth}{calibration}
 
-
-
-
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "isae-report-template"
-%%% End: 
+The calibration procedure is implemented in file \texttt{calibrate.cpp}, and more tests can be done by editing the file and running the script with commands \texttt{make calibrate \&\& ./bin/calibrate}.
