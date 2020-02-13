@@ -17,7 +17,7 @@ const int N = 4;
 const int NAME_SIZE = 512;
 char name[NAME_SIZE];
 
-CplexModel::CplexModel(int N, double* C, const char sep) : N(N), C(C) {
+CplexModel::CplexModel(int N, const double* C, const char sep) : N(N), C(C) {
   n_var = (N - 1) * (2 * N - 1);
   nameMap = vector<string>(n_var);
 
@@ -197,5 +197,3 @@ const TSPsolution CplexModel::getSolution() const {
 
   return TSPsolution(objval, N, varVals, nameMap);
 }
-
-// int main(int argc, char const* argv[]) {}

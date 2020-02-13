@@ -1,4 +1,5 @@
-#include "IteratedLK.hpp"
+#include "utilities.hpp"
+#include "CPLEX.hpp"
 #include "LK.hpp"
 #include "Pair.hpp"
 #include "TSPsolution.hpp"
@@ -7,6 +8,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <experimental/filesystem>
 #include <random>
 #include <set>
 
@@ -15,11 +17,13 @@ using std::pair;
 using std::set;
 using std::vector;
 
+namespace fs = std::experimental::filesystem;
+
 /**
  * @param N number of tour vertices
  * @return pointer to list of vertices
  */
-vector<vertex>* naiveTour(const unsigned int N) {
+vector<vertex>* utils::naiveTour(const unsigned int N) {
   vector<vertex>* v = new vector<vertex>(N);
   for (vertex i = 0; i < N; ++i) (*v)[i] = i;
   return v;
@@ -32,7 +36,7 @@ vector<vertex>* naiveTour(const unsigned int N) {
  * @param N number of tour vertices
  * @return cost of final tour
  */
-double nearestNeighbour(const double* C, const unsigned int N) {
+double utils::nearestNeighbour(const double* C, const unsigned int N) {
   vector<vertex>* tour = new vector<vertex>;
   vector<bool> visited(N, false);
   double cost = 0.0;
@@ -61,7 +65,8 @@ double nearestNeighbour(const double* C, const unsigned int N) {
  * @param permute if true a random permutation of the provided tour is returned
  * @return Tour object
  */
-Tour createTour(vector<vertex> atour, const double* C, const bool permute) {
+Tour utils::createTour(vector<vertex> atour, const double* C,
+                       const bool permute) {
   const unsigned int N = atour.size();
 
   if (permute) {
@@ -87,8 +92,8 @@ Tour createTour(vector<vertex> atour, const double* C, const bool permute) {
  * @param log stream where to log iterations
  * @return pair with solution object and total execution time
  */
-pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
-                                      const double* C, ostream& log) {
+pair<TSPsolution, double> utils::runILK(const Params& P, const unsigned int N,
+                                        const double* C, ostream& log) {
   vector<vertex>* tour0 = naiveTour(N);
   // vector<vertex>* tour0 = nearestNeighbour(C, N);
   double tot_seconds = 0.0, part_seconds = 0.0;
@@ -112,4 +117,26 @@ pair<TSPsolution, double> iterated_LK(const Params& P, const unsigned int N,
   }
   delete tour0;
   return {best, tot_seconds};
+}
+
+pair<TSPsolution, double> utils::runOptimal(const Params& P,
+                                            const unsigned int N,
+                                            const double* costs,
+                                            ostream& log_cplex) {
+  std::cout << "Solving with optimal algorithm..." << std::endl;
+  std::chrono::_V2::system_clock::time_point start, end;
+  double elapsed_seconds;
+  // Create CPLEX TSP problem with N holes
+  CplexModel mod = CplexModel(N, costs, fs::path::preferred_separator);
+  // Solve problem and measure time
+  start = std::chrono::system_clock::now();
+  mod.solve();
+  end = std::chrono::system_clock::now();
+  elapsed_seconds = std::chrono::duration<double>(end - start).count();
+  log_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
+  // Log solution to file and add element to display tables
+  TSPsolution cplex_res = mod.getSolution();
+  log_cplex << "Solved in: " << elapsed_seconds << " sec\n" << cplex_res;
+
+  return {cplex_res, elapsed_seconds};
 }

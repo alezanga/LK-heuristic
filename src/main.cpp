@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "CPLEX.hpp"
-#include "IteratedLK.hpp"
 #include "TSPinstance.hpp"
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
+#include "utilities.hpp"
 #include "utils/params.hpp"
 #include "utils/python_adapter.hpp"
 #include "utils/variadic_table.hpp"
@@ -59,7 +59,7 @@ pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
                                        const PyWrapper& py) {
   cout << "Solving with heuristic..." << std::endl;
   // LK model
-  pair<TSPsolution, double> lk_res = iterated_LK(P, N, costs, log_lk);
+  pair<TSPsolution, double> lk_res = utils::runILK(P, N, costs, log_lk);
   log_lk << "##### BEST SOLUTION (size " << N << ") #####\n"
          << "Total time: " << lk_res.second << " sec\n"
          << lk_res.first;
@@ -70,26 +70,6 @@ pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
                  "path_" + std::to_string(N));
 
   return lk_res;
-}
-
-pair<TSPsolution, double> runOptimal(const Params& P, double* costs,
-                                     unsigned int N, ofstream& log_cplex) {
-  cout << "Solving with optimal algorithm..." << std::endl;
-  std::chrono::_V2::system_clock::time_point start, end;
-  double elapsed_seconds;
-  // Create CPLEX TSP problem with N holes
-  CplexModel mod = CplexModel(N, costs, fs::path::preferred_separator);
-  // Solve problem and measure time
-  start = std::chrono::system_clock::now();
-  mod.solve();
-  end = std::chrono::system_clock::now();
-  elapsed_seconds = std::chrono::duration<double>(end - start).count();
-  log_cplex << "##### OPTIMAL SOLUTION (size " << N << ") #####\n";
-  // Log solution to file and add element to display tables
-  TSPsolution cplex_res = mod.getSolution();
-  log_cplex << "Solved in: " << elapsed_seconds << " sec\n" << cplex_res;
-
-  return {cplex_res, elapsed_seconds};
 }
 
 void testTimes(const Params& P) {
@@ -140,13 +120,13 @@ void testTimes(const Params& P) {
         heur_values.push_back({N, solheur.first.objVal});
       }
       if (P.solve_cplex) {
-        solopt = runOptimal(P, cost, N, sol_cplex);
+        solopt = utils::runOptimal(P, N, cost, sol_cplex);
         cplex_times.push_back({N, solopt.second});
         cplex_values.push_back({N, solopt.first.objVal});
       }
       // Nearest neighbour
       auto start = std::chrono::system_clock::now();
-      double nncost = nearestNeighbour(cost, N);
+      double nncost = utils::nearestNeighbour(cost, N);
       auto end = std::chrono::system_clock::now();
       double nn_time = std::chrono::duration<double>(end - start).count();
       nn_times.push_back({N, nn_time});

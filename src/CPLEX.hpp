@@ -11,7 +11,7 @@ struct TSPsolution;
 
 struct CplexModel {
  public:
-  CplexModel(int, double*, const char = '/');
+  CplexModel(int, const double*, const char = '/');
   ~CplexModel();
   void solve() const;
   const TSPsolution getSolution() const;
@@ -20,7 +20,7 @@ struct CplexModel {
   Env env;
   Prob lp;
   int n_var, N;
-  double* C;
+  const double* C;
   std::vector<std::string> nameMap;
   void setupLP(const char);
 };

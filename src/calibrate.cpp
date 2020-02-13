@@ -2,9 +2,9 @@
 #include <experimental/filesystem>
 #include <vector>
 
-#include "IteratedLK.hpp"
 #include "TSPinstance.hpp"
 #include "TSPsolution.hpp"
+#include "utilities.hpp"
 #include "utils/params.hpp"
 #include "utils/variadic_table.hpp"
 #include "utils/yaml_parser.hpp"
@@ -22,9 +22,9 @@ namespace fs = std::experimental::filesystem;
 
 vector<unsigned int> Ks = {100};
 vector<unsigned int> MNs{2, 5};
-vector<unsigned int> BTs{4, 5};
+vector<unsigned int> BTs{2, 3, 4};
 vector<unsigned int> IMDs{5, 8, 10};
-vector<unsigned int> INTs{20, 40, 60};
+vector<unsigned int> INTs{40, 50, 60};
 
 void calibrateLK(Params P) {
   unsigned int N = 90;
@@ -63,7 +63,7 @@ void calibrateLK(Params P) {
             int improving_it = 0;
             int iterations = 10;
             for (int iter = 0; iter < iterations; ++iter) {
-              auto [sol, time] = iterated_LK(P, N, costsM, nullStream);
+              auto [sol, time] = utils::runILK(P, N, costsM, nullStream);
               double error = abs(sol.objVal - opt_val) / opt_val;
               if (error < best_error) best_error = error;
               if (error > worst_error) worst_error = error;

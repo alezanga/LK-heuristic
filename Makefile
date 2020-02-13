@@ -12,23 +12,27 @@ ODIR = build
 SRCDIR = src
 BIN = bin
 
-OBJ = $(ODIR)/main.o $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
-	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Pair.o
+OBJ = $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
+	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/utilities.o $(ODIR)/Pair.o
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 		$(CC) $(CPPFLAGS) -I$(CPX_INCDIR) -c $^ -o $@
 
-main: $(OBJ)
-		$(CC) $(PY_CFLAGS) $(CPPFLAGS) $(OBJ) -o $(BIN)/main -L$(CPX_LIBDIR) $(CPX_LDFLAGS) $(PY_LDFLAGS)
+MAIN = $(ODIR)/main.o $(OBJ)
+main: $(MAIN)
+		$(CC) $(PY_CFLAGS) $(CPPFLAGS) $(MAIN) -o $(BIN)/main -L$(CPX_LIBDIR) $(CPX_LDFLAGS) $(PY_LDFLAGS)
 
-CAL = $(ODIR)/calibrate.o $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
-	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/IteratedLK.o $(ODIR)/Pair.o
-
+CAL = $(ODIR)/calibrate.o $(OBJ)
 calibrate: $(CAL)
 		$(CC) $(CPPFLAGS) $(CAL) -o $(BIN)/calibrate -L$(CPX_LIBDIR) $(CPX_LDFLAGS)
 
+TEST = $(ODIR)/test.o $(OBJ)
+test: $(TEST)
+		$(CC) $(CPPFLAGS) $(TEST) -o $(BIN)/test -L$(CPX_LIBDIR) $(CPX_LDFLAGS)
+
+OTHERS = $(ODIR)/test.o $(ODIR)/calibrate.o $(ODIR)/main.o $(BIN)/main $(BIN)/calibrate $(BIN)/test
 clean:
-		rm -rf $(OBJ) $(CAL) $(BIN)/main $(BIN)/calibrate $(SRCDIR)/*.pyc $(SRCDIR)/__pycache__
+		rm -rf $(OBJ) $(OTHERS) $(SRCDIR)/*.pyc $(SRCDIR)/__pycache__
 
 .PHONY: clean
 

@@ -20,6 +20,11 @@ struct Params {
 
   std::vector<std::string> instances_to_read;
 
+  // Test
+  std::vector<unsigned int> size_to_test;
+  unsigned int instances_per_size;
+  unsigned int runs_per_instances;
+
   // Params for LK
 
   // Max lenght of alternating path to search for
