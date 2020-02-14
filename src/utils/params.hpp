@@ -22,8 +22,8 @@ struct Params {
 
   // Test
   std::vector<unsigned int> size_to_test;
-  unsigned int instances_per_size;
-  unsigned int runs_per_instances;
+  unsigned int runs_per_instance;
+  std::vector<unsigned int> restarts;
 
   // Params for LK
 

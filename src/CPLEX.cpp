@@ -49,7 +49,7 @@ void CplexModel::setupLP(const char sep) {
       if (i == j) continue;
       char xtype = 'C';
       double lb = 0.0;  // greater than 0
-      double ub = N;
+      double ub = N - 1;
       double obj = 0.0;  // not present in obj. function
       snprintf(name, NAME_SIZE, "x_%i_%i", i, j);
       char* xname = static_cast<char*>(name);

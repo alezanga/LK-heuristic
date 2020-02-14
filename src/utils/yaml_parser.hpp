@@ -14,7 +14,8 @@
 class YamlP {
  private:
   std::unordered_map<std::string,
-                     std::variant<bool, unsigned int, std::vector<std::string>>>
+                     std::variant<bool, unsigned int, std::vector<std::string>,
+                                  std::vector<uint>>>
       _params;
 
   static bool is_number(const std::string& s) {
@@ -36,7 +37,7 @@ class YamlP {
    * @param s input string
    * @return vector of strings with content of list
    */
-  static std::vector<std::string> parseList(std::string& s) {
+  static std::vector<std::string> parseStringList(std::string& s) {
     std::vector<std::string> list;
     s.pop_back();        // remove ']'
     s.erase(s.begin());  // remove '['
@@ -54,6 +55,27 @@ class YamlP {
     std::string last_token = s.substr(prev_pos);
     trim(last_token);
     list.push_back(std::move(last_token));
+    return list;
+  }
+
+  static std::vector<uint> parseIntList(std::string& s) {
+    std::vector<uint> list;
+    s.pop_back();        // remove ']'
+    s.erase(s.begin());  // remove '['
+    if (s.empty()) {
+      std::cerr << "Warning: no instances to read!";
+      return list;
+    }
+    size_t prev_pos = 0;
+    for (size_t pos = s.find(','); pos != std::string::npos;
+         prev_pos = pos + 1, pos = s.find(',', prev_pos)) {
+      std::string token = s.substr(prev_pos, (pos - prev_pos));
+      trim(token);
+      list.push_back(std::stoi(token));
+    }
+    std::string last_token = s.substr(prev_pos);
+    trim(last_token);
+    list.push_back(std::stoi(last_token));
     return list;
   }
 
@@ -97,13 +119,18 @@ class YamlP {
       trim(value);
 
       // Process pair (key,value)
-      std::variant<bool, unsigned int, std::vector<std::string>> vval;
+      std::variant<bool, unsigned int, std::vector<std::string>,
+                   std::vector<uint>>
+          vval;
       if (is_number(value))
         vval = static_cast<unsigned int>(std::stoi(value));
       else if (is_bool(value))
         vval = (value == "true") ? true : false;
       else if (is_list(value))
-        vval = parseList(value);
+        if (key == "instances_to_read")  // list of strings
+          vval = parseStringList(value);
+        else  // list of ints
+          vval = parseIntList(value);
       else
         throw std::ios_base::failure("Unsupported value in yaml: " + value);
 
@@ -131,6 +158,10 @@ class YamlP {
     p.intens_min_depth = std::get<unsigned int>(_params.at("intens_min_depth"));
     p.intens_n_tours = std::get<unsigned int>(_params.at("intens_n_tours"));
     p.LK_iterations = std::get<unsigned int>(_params.at("LK_iterations"));
+
+    p.restarts = std::get<std::vector<uint>>(_params.at("restarts"));
+    p.size_to_test = std::get<std::vector<uint>>(_params.at("size_to_test"));
+    p.runs_per_instance = std::get<uint>(_params.at("runs_per_instance"));
     return p;
   }
 };

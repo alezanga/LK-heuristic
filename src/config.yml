@@ -19,7 +19,7 @@ I: 1000
 # Max number of alternatives to look for when considering edges to add (0 means unbounded)
 max_neighbours: 5
 # Max depth (i) allowing trials of second choice for removing edge x_i
-backtracking_threshold: 2
+backtracking_threshold: 3
 # Min lenght of the path to start intensification
 intens_min_depth: 5
 # Number of tours to consider for intensification
@@ -29,6 +29,7 @@ LK_iterations: 5
 
 # TEST PARAMETERS
 # Instances size to generate and solve in test script
-size_to_test: [10, 20, 30, 40, 50, 60]
-instances_per_size: 5
-runs_per_instances: 10
+size_to_test: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110]
+runs_per_instance: 10
+# restarts will overrwite LK_iterations
+restarts: [5, 15, 30]

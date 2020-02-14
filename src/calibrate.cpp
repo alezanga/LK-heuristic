@@ -21,24 +21,24 @@ using std::vector;
 namespace fs = std::experimental::filesystem;
 
 vector<unsigned int> Ks = {100};
-vector<unsigned int> MNs{2, 5};
+vector<unsigned int> MNs{3, 5};
 vector<unsigned int> BTs{2, 3, 4};
 vector<unsigned int> IMDs{5, 8, 10};
-vector<unsigned int> INTs{40, 50, 60};
+vector<unsigned int> INTs{20, 50};
 
 void calibrateLK(Params P) {
-  unsigned int N = 90;
+  unsigned int N = 198;
+  // double opt_val = 701.413;
+  double opt_val = 15780;
   P.LK_iterations = 1;
 
   TSPinstance inst;
-  inst.loadFromCsv("instances/tsp_90.csv");
+  inst.loadFromCsv("instances/d198.csv");
   double* costsM = inst.costMatrix();
 
   fs::path logd = fs::current_path() / "files";
   std::ofstream cal_log((logd / "calibration_out.txt").string(),
                         std::ofstream::out);
-
-  double opt_val = 701.413;
 
   VariadicTable<uint, uint, uint, uint, uint, double, double, double, int,
                 double, double>

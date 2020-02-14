@@ -78,7 +78,6 @@ void testTimes(const Params& P) {
   fs::path logd = fs::current_path() / "files";
   std::ofstream sol_cplex((logd / "solCPLEX.txt").string(), std::ofstream::out);
   std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
-  std::ofstream fileres((logd / "results.txt").string(), std::ofstream::out);
 
   TSPinstance coords;
 
@@ -175,7 +174,6 @@ void testTimes(const Params& P) {
   }
   sol_cplex.close();
   sol_lk.close();
-  fileres.close();
 }
 
 int main() {
