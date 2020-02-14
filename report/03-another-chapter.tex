@@ -3,5 +3,20 @@
 
 \section{Tests and results}
 \label{sec:results}
-The described heuristic has been tested on instances generated as described in \cref{sec:datasetgen}, and its solution has been compared with the optimal solution obtained with the exact method. This has been done for instances of size up to 110, since the exact method could not solve instances of bigger size.
-Tables 
+The described heuristic has been tested on instances generated as described in \cref{sec:datasetgen}, and its solution has been compared with the optimal solution obtained with the exact method. This has been done for instances of size up to 110, since the exact method could not solve instances of bigger size. In addition the same tests have been performed on some symmetric drilling problems from TSPLIB, namely \texttt{d198}, \texttt{d493} and \texttt{d657}, with respect to the optimal solutions listed at \cite{Tsplibsol}.
+The parameters were set with the following values:
+\begin{itemize}
+	\setlength\itemsep{0.03em}
+	\item a
+	\item b
+	\item c
+	\item d
+	\item e
+	\item f
+\end{itemize}
+
+\subsection{Tests on syntetic dataset}
+For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value was computed for both execution times and for relative percentage error with respect to the optimal value. The following tables summarizes the results obtained.
+
+\input{results-tables}
+

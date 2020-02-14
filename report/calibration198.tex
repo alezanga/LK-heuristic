@@ -1,0 +1,81 @@
+% !TeX spellcheck = en_GB
+% !TeX root = memoco-report.tex
+
+\renewcommand{\arraystretch}{1.5}
+\setlength{\arrayrulewidth}{1.1pt}
+\setlength\tabcolsep{3pt}
+\rowcolors{2}{mylred}{white}
+\begin{longtable}{x{1.5cm} x{1.8cm} x{1.8cm} x{1.5cm} x{1.8cm} x{1.5cm} x{1.5cm} x{1.5cm} x{1.8cm}}
+	\caption{Results of calibration on problem d198, with best row in yellow}\\
+	\hline
+	\rowcolor{myred} % o NavyBlue
+	\color{white}\textbf{Max neigh\-bours}
+	&\color{white}\textbf{Back\-track\-ing depth}
+	&\color{white}\textbf{Inten\-sifi\-cation depth}
+	&\color{white}\textbf{Inten\-sifi\-cation tours}
+	&\color{white}\textbf{Avg error (\%)}
+	&\color{white}\textbf{Optimal}
+	&\color{white}\textbf{Avg ite\-ra\-tions}
+	&\color{white}\textbf{Total time ~~~(s)}
+	&\color{white}\textbf{Score ($\times100$)}\\
+	\hline
+	\endfirsthead
+	
+	\rowcolor{white}
+	\caption[]{Results of calibration on problem d198 (continuation)}\\
+	\hline
+	\rowcolor{myred}
+	\color{white}\textbf{Max neigh\-bours}
+	&\color{white}\textbf{Back\-track\-ing depth}
+	&\color{white}\textbf{Inten\-sifi\-cation depth}
+	&\color{white}\textbf{Inten\-sifi\-cation tours}
+	&\color{white}\textbf{Avg error (\%)}
+	&\color{white}\textbf{Optimal}
+	&\color{white}\textbf{Avg ite\-ra\-tions}
+	&\color{white}\textbf{Total time ~~~(s)}
+	&\color{white}\textbf{Score ($\times100$)}\\
+	\hline
+	\endhead
+	\hline % linea grossa su ultimo fondo
+	\endlastfoot % regole per ultimo pezzo finale
+
+	3 & 2 & 5 & 20 & 7.414 & No & 173 & 16.206 & 0.825 \\
+	3 & 2 & 5 & 50 & 7.644 & No & 172 & 13.098 & 0.990 \\
+	3 & 2 & 8 & 20 & 6.534 & No & 169 & 15.293 & 0.991  \\
+	\rowcolor{yellow}\textbf{3} & \textbf{2} & \textbf{8} & \textbf{50} & \textbf{6.715} & \textbf{No} & \textbf{160} & \textbf{13.949} & \textbf{1.056} \\
+	3 & 2 & 10 & 20 & 7.536 & No & 170 & 15.132 & 0.869 \\
+	3 & 2 & 10 & 50 & 7.561 & No & 172 & 14.319 & 0.915 \\
+	3 & 3 & 5 & 20 & 6.835 & No & 168 & 38.250 & 0.381 \\
+	3 & 3 & 5 & 50 & 6.646 & No & 160 & 35.921 & 0.417 \\
+	3 & 3 & 8 & 20 & 6.686 & No & 173 & 40.246 & 0.370 \\
+	3 & 3 & 8 & 50 & 6.375 & No & 166 & 35.907 & 0.435 \\
+	3 & 3 & 10 & 20 & 7.032 & No & 164 & 39.012 & 0.363 \\
+	3 & 3 & 10 & 50 & 6.178 & No & 167 & 36.073 & 0.447 \\
+	3 & 4 & 5 & 20 & 6.369 & No & 172 & 92.831 & 0.169 \\
+	3 & 4 & 5 & 50 & 6.440 & No & 180 & 96.476 & 0.161 \\
+	3 & 4 & 8 & 20 & 6.453 & No & 182 & 101.603 & 0.152 \\
+	3 & 4 & 8 & 50 & 6.226 & No & 179 & 98.509 & 0.163 \\
+	3 & 4 & 10 & 20 & 6.429 & No & 174 & 96.207 & 0.161  \\
+	3 & 4 & 10 & 50 & 6.487 & No & 173 & 94.989 & 0.162 \\
+	
+	5 & 2 & 5 & 20 & 7.122 & No & 157 & 23.273 & 0.599723 \\
+	5 & 2 & 5 & 50 & 5.933 & No & 160 & 22.145 & 0.755387 \\
+	5 & 2 & 8 & 20 & 6.446 & No & 156 & 23.502 & 0.655808 \\
+	5 & 2 & 8 & 50 & 6.582 & No & 158 & 21.338 & 0.707018 \\
+	5 & 2 & 10 & 20 & 6.055 & No & 162 & 22.772 & 0.72001 \\
+	5 & 2 & 10 & 50 & 6.065 & No & 163 & 22.899 & 0.714918 \\
+	5 & 3 & 5 & 20 & 6.189 & No & 177 & 86.192 & 0.187116 \\
+	5 & 3 & 5 & 50 & 5.750 & No & 172 & 81.449 & 0.213082 \\
+	5 & 3 & 8 & 20 & 6.144 & No & 164 & 83.906 & 0.193589 \\
+	5 & 3 & 8 & 50 & 5.798 & No & 160 & 76.600 & 0.224661 \\
+	5 & 3 & 10 & 20 & \textbf{4.911} & No & 172 & 88.131 & 0.230503 \\
+	5 & 3 & 10 & 50 & 6.416 & No & 171 & 81.883 & 0.189972 \\
+	5 & 4 & 5 & 20 & 6.350 & No & 185 & 338.084 & 0.0465553 \\
+	5 & 4 & 5 & 50 & 6.419 & No & 177 & 337.700 & 0.0461115 \\
+	5 & 4 & 8 & 20 & 6.291 & No & 182 & 338.429 & 0.0469481 \\
+	5 & 4 & 8 & 50 & 6.160 & No & 177 & 312.465 & 0.0519241 \\
+	5 & 4 & 10 & 20 & 6.269 & No & 176 & 336.557 & 0.0473713 \\
+	5 & 4 & 10 & 50 & 6.213 & No & 181 & 336.470 & 0.0478133\label{tab:calibration198} \\
+\end{longtable}
+\setlength{\arrayrulewidth}{1pt}
+\renewcommand{\arraystretch}{1}

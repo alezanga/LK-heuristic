@@ -25,15 +25,20 @@ The specific linear programming model used and its decision variables are presen
 \end{itemize}
 \begin{align}
 	&\min \sum\limits_{i,j:(i,j)\in A} c_{ij}y_{ij}\\
-	&~s.t.~\sum_{i:(i,k)\in A}x_{ik} - \sum_{j:(k,j)\in A, j\ne 0}x_{kj}~~=~1~~~~~~~~~~~~~~~~~~~~~~~\forall~k \in N \setminus \{0\}\\
-	& ~~~~~\sum_{j:(i,j)\in A} y_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~=~1~~~~~~~~~~~~~~~~~~~~~~\forall~i \in N\\
-	& ~~~~~\sum_{i:(i,j)\in A} y_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~=~1~~~~~~~~~~~~~~~~~~~~~~\forall~j \in N\\ 
-	&~~~~~~x_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\le~(|N|-1)~y_{ij}~~~~~~~\forall~(i,j) \in A,j\ne 0\\
-	&~~~~~~x_{ij} \in \mathbb{R}_+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\forall~(i,j) \in A,j\ne 0\\
-	&~~~~~~y_{ij} \in {0,1}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\forall~(i,j) \in A
+	&~s.t.~\sum_{i:(i,k)\in A}x_{ik} - \sum_{j:(k,j)\in A, j\ne 0}x_{kj}~~=~1~~~~~~~~~~~~~~~~~~~~~~~\forall~k \in N \setminus \{0\}\label{eq:flow}\\
+	&~~~~~~\sum_{j:(i,j)\in A} y_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~=~1~~~~~~~~~~~~~~~~~~~~~~\forall~i \in N \label{eq:sumi}\\
+	&~~~~~~\sum_{i:(i,j)\in A} y_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~=~1~~~~~~~~~~~~~~~~~~~~~~\forall~j \in N \label{eq:sumj}\\ 
+	&~~~~~~x_{ij}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\le~(|N|-1)~y_{ij}~~~~~~~\forall~(i,j) \in A,j\ne 0 \label{eq:constrxy}\\
+	&~~~~~~x_{ij} \in \mathbb{R}_+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\forall~(i,j) \in A,j\ne 0 \label{eq:constrx}\\
+	&~~~~~~y_{ij} \in \{0,1\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\forall~(i,j) \in A
 \end{align}
 
-The linear programming model is built in the function \texttt{setupLP} in file \texttt{CPLEX.cpp}, and solved calling the IBM CPLEX routines.
+Actually, when adding the variables $x$ and $y$ to the model, each variable $x_{ij}~\forall~(i,j) \in A,j\ne 0$, instead of being unbounded like in constraint \ref{eq:constrx}, is forced to be in range $[0,N-1]$. The model is still valid, since constraint \ref{eq:constrxy} also bound the variable in this range.
+
+\subsection{Creation of the model}
+The linear programming model is set up in the function \texttt{setupLP} in file \texttt{CPLEX.cpp}.\\
+During the creation of the model, its decision variables $x_{ij}$ and $y_{ij}$ are first added one by one (for each possible value of $i$ and $j$) through the appropriate CPLEX functions to a C array. Considering that this variables have to be referenced later during the definition of the constraints, their position in the CPLEX array is recorded in two bidimensional vectors, one for the $x$, called \texttt{xMap}, and one for $y$ variables, named \texttt{yMap}. In this way variable $x_{ij}$ can be later referenced easily with \texttt{xMap[i][j]} for all $i$ and $j$. After defining the variables of the problem, the constraints \ref{eq:flow}-\ref{eq:constrxy} are inserted. Constraint \ref{eq:constrxy} was reformulated as $x_{ij} - (|N|-1)y_{ij} \le 0$ because the CPLEX APIs require all the variables in the left-hand side and only constants in the right side of the equation.\\
+The model can be solved calling the function \texttt{solve}, which calls the IBM CPLEX solving routines for a minimization problem. The solution can then be retrieved using the method \texttt{getSolution} which returns a \texttt{TSPsolution} object, which wraps many useful information about the final solution, and is used for both the exact method and the heuristic one.
 
 \section{Heuristic method}
 \label{chap:heuris}
@@ -74,7 +79,7 @@ In the implemented algorithm, the move size threshold which allows for the excep
 	\label{fig:feasibility-moves}
 \end{figure}
 
-\subsection{Adopted stopping criterion}
+\subsection{Stopping criterion}
 The algorithm uses the same stopping criterion suggested in the original paper. In particular, when the algorithm finds a feasible tour with a move of size $k$, it checks whether the total gain is the best seen so far. If it is then it is the best improvement seen and it saves the current solution, and tries to improve further with a $k+1$ move. If this does not improve the solution the algorithm returns the solution it saved. On the other hand, if the size $k$ move yields a feasible tour which is not the best seen so far, the algorithm stops, since it knows there is a better move, with size smaller than $k$, that produces a better tour.\\
 It's worth to say that this is not the only possible criterion to stop the search. Other more patient and less greedy strategies could be used.
 
@@ -123,7 +128,7 @@ A max-heap data structure is used in order to efficiently replace the worst (i.e
 In choosing the parameter $S$ it is important to keep in mind that intensification is done only after $S$ local optima are found, so one should ensure that this number is suitable for the problem dimension, since a very large number with a small problem would probably be ineffective.
 
 \subsubsection{Recognizing duplicate solutions}
-The authors of the algorithm stated that 30\% to 50\% of running time could be saved by keeping track of previous local optima and stopping the algorithm if the current local optima is the same seen before. This is justified by the fact that if the algorithm couldn't improve this solution before, it's unlikely it can do it now. While this sounds reasonable, in the proposed implementation no particular speed-up was registered. This may be due to the very different computing capabilities of the hardware used in 1973.\\
+The authors of the algorithm stated that 30\% to 50\% of running time could be saved by keeping track of previous local optima and stopping the algorithm if the current local optima is the same seen before. This is justified by the fact that if the algorithm couldn't improve this solution before, it's unlikely it can do it now. While this sounds reasonable, in the proposed implementation no particular speed-up was registered. This may be due to hardware differences in computing power, considering that the algorithm was devised in 1973.\\
 Since trying to improve a previously found local optima will likely fail, the proposed algorithm adopts a slightly different strategy in this eventuality: instead of stopping, it restarts from a different starting edge and proceeds normally until it finds a different solution, or it determines no better tour exists. While this does not guarantee an improvement in running time, it makes the algorithm redirect the search in a different direction, which is probably more useful that exploring the neighbourhood of a previous solution.\\
 To do this, an \texttt{std::set} data structure is used, which maintains a sorted collection (ordered by tour cost) of all the feasible tours found at each iteration. This container guarantees logarithmic insertion and search operations.\\
 As a possible improvement to this strategy, one could keep track of the edges modified while converging to the previously encountered solution, and make sure that at least some of these are not added again, which can potentially lead to the same solution again, or to a very similar one.
@@ -142,17 +147,26 @@ This heuristic works well in practice, but may require some tuning to be usable 
 If the algorithm spend too much searching for a move (i.e. searching for an exchange), the \texttt{K} parameter should be lowered. On the other hand, if the algorithm tends to do too many iterations, this number may be limited by lowering \texttt{I}. Reducing \texttt{K} and increasing \texttt{I} allow the algorithm to do a bigger number of smaller improvements. On the other hand increasing \texttt{K} and reducing \texttt{I} will allow for a lower number of better improvements.
 
 \subsubsection{Calibration}
-Some parameters in \cref{tab:hyperparameters} may affect the running time and the solution quality. In order to determine how much this parameters influenced this metrics and to select a good combination, tests were run on a single instance of the dataset. Table \ref{tab:calibration} reports the results of the calibration procedure on an instance with 90 points. Listed information includes the average percentage error, whether the optimal solution was found, the average number of iterations and the total time required for the 10 iterations.
-The final score is obtained by iterating the heuristic 10 times on the same instance and takes into account the average percentage relative error (w.r.t. the optimal solution computed using the exact algorithm), called $ARE$ and the total execution time for the 10 iterations, called $TT$. The score is given by \cref{eq:score}.
+Some parameters in \cref{tab:hyperparameters} may affect the running time and the solution quality. In order to determine how much this parameters influenced this metrics and to select the best ones for the final tests, some trials were done on two different instances, one of size 90 and one of size 198 taken from TSPLIB\footnote{\url{http://elib.zib.de/pub/mp-testdata/tsp/tsplib/tsplib.html}}. Given some sets of parameters to try, every possible combination has been tested by restarting the heuristic 10 times on each combination. The results are reported in tables and discussed in the next paragraphs. Listed information includes the average percentage error, whether the optimal solution was found, the average number of iterations and the total time required for the 10 iterations. The final score is obtained by iterating the heuristic 10 times on the same instance and takes into account the average percentage relative error (w.r.t. the optimal solution computed using the exact algorithm), called $ARE$ and the total execution time for the 10 iterations, called $TT$. The score is given by \cref{eq:score}.
 \begin{equation}
 	\text{Score} = \cfrac{1}{1 + (ARE * TT)}
 	\label{eq:score}
 \end{equation}
-These results were obtained by using all the features described before, and by compiling the final executable with \texttt{-O3} optimization flag.
+These results were obtained by using all the features described before, and by compiling with \texttt{-O3} optimization flag. Both tests were done with \texttt{K = 100}.\\
+The calibration procedure is implemented in file \texttt{calibrate.cpp}, and more tests can be done by editing the file and running the script with commands~\texttt{make calibrate \&\& ./bin/calibrate}.
+
+\paragraph{Syntetic instance of size 90}\mbox{}\\
+Table \ref{tab:calibration} reports the results of the calibration procedure on an instance with 90 points.
 Other tests, which are not reported here, were run using the other two ranking strategies to sort the candidates to be joined, discussed in \cref{ssec:neighbourhood}. Strategies using the best and average gain performed similarly, while the strategy sorting by worst gain performed poorly. Three different calibrations for all three strategies has been run and the average gain strategy was selected because it reached the optimal solution more frequently then the best gain one.\\
-As can e seen in \cref{tab:calibration}, considering more neighbours during the selection of the edge to join (5 instead of 2) results in a lower average error and higher running time. However with value set to 5 the optimal value was found in all cases but one.\\
-Additional tests were done with \textit{backtracking depth} set to 2 and 3. Lowering this parameter reduce running time and also the frequency of finding the optimum, so in the final tests the value was set to 4.\\
+As can e seen in \cref{tab:calibration}, considering more neighbours during the selection of the edge to join (5 instead of 2) results in a lower average error and higher running time. Additionally with value set to 5 the optimal value was found in all cases but one.\\
+Additional tests were done with \texttt{backtracking\_depth} set to 2 and 3. Lowering this parameter reduce running time and also the frequency of finding the optimum, so in the table only the runs with depth 4 or 5 are listed.\\
 
 \LTXtable{\linewidth}{calibration}
 
-The calibration procedure is implemented in file \texttt{calibrate.cpp}, and more tests can be done by editing the file and running the script with commands \texttt{make calibrate \&\& ./bin/calibrate}.
+\paragraph{TSPLIB d198}\mbox{}\\
+In order to select some good parameters for a non trivial instance, and additional calibration was done on a drilling problem with 198 points from TSPLIB, called "d198".\\
+Since the instance is bigger, tests were done with higher values for \texttt{max\_neighbours}, \texttt{back\-track\-ing\_depth} up to 4 (5 is too much for big instances), and the number of tours used for intensification has been limited to 20 or 50. Table \ref{tab:calibration198} shows the results. This time the score is much lower because of the higher running time, so it has been multiplied by 100, to make it more readable.
+
+\LTXtable{\linewidth}{calibration198}
+
+No execution arrived at the optimal solution, but the original paper suggests that with more restarts better solutions can be found. In three runs with \texttt{max\_neighbours = 5}, \texttt{back\-track\-ing\_depth = 3} the best error of the 10 iterations was below 1.0, in particular 0.374, 0.773 and 0.425 with \texttt{intensification\_depth} to 5, 8 and 10 respectively. In the first case the average error was 4.911, which is the best one reported in the table (in bold). In this case the final score strongly penalises the executions with higher backtracking depth because of the long execution time, but the average error tends to decrease with \texttt{max\_neighbours = 5} and \texttt{back\-track\-ing\_depth = 3}.
