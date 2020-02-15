@@ -22,6 +22,6 @@ std::pair<TSPsolution, double> runILK(const Params&, const unsigned int,
 std::pair<TSPsolution, double> runOptimal(const Params&, const unsigned int,
                                           const double*, std::ostream&);
 
-};  // namespace utils
+}  // namespace utils
 
 #endif /* ITER_LK_H */

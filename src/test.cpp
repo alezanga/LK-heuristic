@@ -65,6 +65,8 @@ void test(Params& P) {
   ofstream fileres((logd / "results.txt").string(), ofstream::out);
   ofstream log((logd / "test_log.txt").string(), ofstream::out);
 
+  VariadicTable<uint, double> plot_data({"Size", "Opt time (s)"});
+
   TSPinstance data;
   // For each size to test
   for (unsigned int size : P.size_to_test) {
@@ -73,6 +75,7 @@ void test(Params& P) {
     data.generateRandomPolygons(size);
     double* C = data.costMatrix();
     auto [solo, timeo] = utils::runOptimal(P, size, C, log);
+    plot_data.addRow({size, timeo});
 
     for (unsigned int inst = 0; inst < P.runs_per_instance; ++inst) {
       vector<double> time_run;
@@ -115,6 +118,9 @@ void test(Params& P) {
     times.print(fileres);
     fileres << std::endl;
   }
+  plot_data.setColumnPrecision(vector<int>{1, 3});
+  fileres << "\nOPT times\n";
+  plot_data.print(fileres);
   fileres.close();
 }
 

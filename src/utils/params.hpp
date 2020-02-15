@@ -10,7 +10,6 @@ struct Params {
   Params() = default;
 
  public:
-  bool print_console;
   bool generate_instances;
   bool solve_cplex;
   bool solve_heur;

@@ -140,7 +140,6 @@ class YamlP {
 
   Params config() const {
     Params p;
-    p.print_console = std::get<bool>(_params.at("print_console"));
     p.generate_instances = std::get<bool>(_params.at("generate_instances"));
     p.instances_to_read =
         std::get<std::vector<std::string>>(_params.at("instances_to_read"));

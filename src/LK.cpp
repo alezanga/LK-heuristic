@@ -3,7 +3,6 @@
 #include "TSPsolution.hpp"
 #include "Tour.hpp"
 
-#include <assert.h>
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -58,7 +57,6 @@ void LK::updateGoodEdges(const Tour& newTour) {
           {std::move(newTour.edgeSet()), newTour.getObjVal()});
       std::push_heap(good_edges.first.begin(), good_edges.first.end(), less);
     } else {
-      assert(good_edges.first.at(0).second > newTour.getObjVal());
       // New best solution
       // Pop worst tour in heap
       std::pop_heap(good_edges.first.begin(), good_edges.first.end(), less);

@@ -43,7 +43,7 @@ def plotTimes(opt_times, heur_times, title, filename):
         plt.show()
 
 
-def plotError(opt_value, heur_value, nn_value, title, filename):
+def plotError(opt_value, heur_value, title, filename):
     """
     Plots obj values and errors
 
@@ -51,13 +51,11 @@ def plotError(opt_value, heur_value, nn_value, title, filename):
 
     @param heur_value (list[tuple[int, float]]): heuristic obj values for each problem
 
-    @param nn_value (list[tuple[int, float]]): nearest neighbour obj values for each problem
-
     @param title (str): a string with plot title
 
     @param filename (str): a string with filename to save png plot (empty => do not save)
     """
-    if (len(opt_value) != len(heur_value) != len(nn_value)):
+    if (len(opt_value) != len(heur_value)):
         return None
 
     if filename:
@@ -67,35 +65,21 @@ def plotError(opt_value, heur_value, nn_value, title, filename):
 
     opt_value.sort(key=lambda x: x[0])
     heur_value.sort(key=lambda x: x[0])
-    nn_value.sort(key=lambda x: x[0])
     N_opt, v_opt = zip(*opt_value)
     _, v_heur = zip(*heur_value)
-    _, v_nn = zip(*nn_value)
 
     plt.xticks(N_opt, N_opt, rotation=45)
 
-    # plt.plot(N_opt, v_opt, linestyle='--', marker='o', color='blue',
-    #          label='CPLEX optimal')
-    # plt.plot(N_heur, v_heur, linestyle='--', marker='o', color='red',
-    #          label='Lin-Keringhan heuristic')
-
     error_heur = list()
-    error_nn = list()
-    valtoplot = zip(N_opt, v_heur, v_nn, v_opt)
-    for n, approx, nn_approx, opt in valtoplot:
+    valtoplot = zip(N_opt, v_heur, v_opt)
+    for n, approx, opt in valtoplot:
         err_h = abs(approx - opt) / opt * 100
-        err_nn = abs(nn_approx - opt) / opt * 100
         error_heur.append(err_h)
-        error_nn.append(err_nn)
         plt.annotate(("%.3f" % err_h), xy=(n, err_h), rotation=45,
                      xytext=(0, 20), ha='center', textcoords='offset points', fontsize=7)
-        # plt.annotate(("%.3f" % err_nn), xy=(n, err_nn), rotation=45,
-        #              xytext=(0, 20), ha='center', textcoords='offset points', fontsize=7)
 
     plt.plot(N_opt, error_heur, linestyle='--', marker='o',
              color='red', label='LK relative error (%)')
-    plt.plot(N_opt, error_nn, linestyle='--', marker='o',
-             color='blue', label='NN relative error (%)')
 
     bottom, top = plt.ylim()  # return the current ylim
     plt.ylim((bottom, top+1))
@@ -126,11 +110,11 @@ def plotPath(coords, tour=[], filename=""):
 
     n = len(coords)
     plt.clf()
-    plt.title("TSP points (size " + str(len(coords)) + ")")
+    plt.title("TSP path (size " + str(len(coords)) + ")")
 
     x, y = zip(*coords)
 
-    plt.scatter(x, y, marker='o', s=9, color='red', zorder=-1)
+    plt.scatter(x, y, marker='o', s=9, color='red', zorder=0)
 
     if len(tour) == len(coords):
         for i in range(0, n-1):
@@ -141,7 +125,7 @@ def plotPath(coords, tour=[], filename=""):
         v = tour[n-1]
         plt.plot([x[u], x[v]], [y[u], y[v]], 'g-', zorder=1)
 
-    plt.axis("tight")
+    plt.axis('off')
 
     if filename:
         plt.savefig(('plots/' + filename + '.png'), format='png', dpi=800)

@@ -1,6 +1,5 @@
 #include "Tour.hpp"
 
-#include <assert.h>
 #include <unordered_set>
 
 using std::pair;
@@ -21,7 +20,6 @@ Tour::Tour(unsigned int N, const vector<Pair>& ed, const double c)
 void Tour::disconnect(vector<Pair>& T, const vector<vertex>& L,
                       unsigned int i) {
   if (i == L.size() - 1) return;
-  assert(T[L[i]].u() == L[i + 1] || T[L[i]].v() == L[i + 1]);
   // Disconnect from successor, and replace it with predecessor
   if (T[L[i]].u() == L[i + 1])
     T[L[i]] = Pair((i > 0) ? L[i - 1] : L[L.size() - 2], T[L[i]].v());
@@ -38,7 +36,6 @@ void Tour::disconnect(vector<Pair>& T, const vector<vertex>& L,
  * @param i index of the first vertex of the edge to remove. i+1 is the second.
  */
 void Tour::connect(vector<Pair>& T, const vector<vertex>& L, unsigned int i) {
-  assert(T[L[i]].u() == L[i - 1] || T[L[i]].v() == L[i - 1]);
   // Connect to successor, and remove reference to predecessor
   if (T[L[i]].u() == L[i - 1])
     T[L[i]] = Pair(L[i + 1], T[L[i]].v());

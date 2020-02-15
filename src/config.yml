@@ -1,17 +1,18 @@
-# Run parameters
-print_console: false
+# MAIN PARAMETERS
+
 solve_cplex: false
 solve_heur: true
 # Instances to read and solve (must be on single line)
-instances_to_read: [d198]
+instances_to_read: [tsp_50]
 
-# Instance generation
+# Instance generation parameters
+# If generate_instances = false the others are ignored
 generate_instances: false
 N_min: 100
 N_incr: 5
 N_max: 100
 
-# Params for LK
+# Params for LK heuristic
 # Max lenght of alternating path to search for
 K: 400
 # Max number of improving iterations (restarts)
@@ -28,8 +29,10 @@ intens_n_tours: 50
 LK_iterations: 5
 
 # TEST PARAMETERS
+
 # Instances size to generate and solve in test script
 size_to_test: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110]
+# How many runs for each size
 runs_per_instance: 10
-# restarts will overrwite LK_iterations
+# restarts will overrwite LK_iterations during tests
 restarts: [5, 15, 30]

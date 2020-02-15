@@ -24,18 +24,6 @@ using std::string;
 using std::vector;
 namespace fs = std::experimental::filesystem;
 
-// Global vector with time threshold to visualize when finished
-// vector<double> rangeThreshold = {0.1, 1, 10, 100};
-
-/**
- * Returns int index corresponding to the range where 'time' belongs
- */
-// unsigned int timeRange(double time) {
-//   unsigned int x = 0;
-//   while (x < rangeThreshold.size() && (time - rangeThreshold[x]) > 0) x++;
-//   return x;
-// }
-
 /**
  * Create instances and write them to csv
  */
@@ -95,8 +83,6 @@ void testTimes(const Params& P) {
     vector<pair<unsigned int, double>> cplex_values;
     vector<pair<unsigned int, double>> heur_times;
     vector<pair<unsigned int, double>> heur_values;
-    vector<pair<unsigned int, double>> nn_values;
-    vector<pair<unsigned int, double>> nn_times;
 
     PyWrapper Py;
 
@@ -123,13 +109,6 @@ void testTimes(const Params& P) {
         cplex_times.push_back({N, solopt.second});
         cplex_values.push_back({N, solopt.first.objVal});
       }
-      // Nearest neighbour
-      auto start = std::chrono::system_clock::now();
-      double nncost = utils::nearestNeighbour(cost, N);
-      auto end = std::chrono::system_clock::now();
-      double nn_time = std::chrono::duration<double>(end - start).count();
-      nn_times.push_back({N, nn_time});
-      nn_values.push_back({N, nncost});
 
       cout << std::endl;
 
@@ -139,37 +118,9 @@ void testTimes(const Params& P) {
     // Plot data with Python
     Py.plot_times(cplex_times, heur_times,
                   "Execution times for each problem size (N)", "times");
-    Py.plot_errors(cplex_values, heur_values, nn_values,
+    Py.plot_errors(cplex_values, heur_values,
                    "Objective values for problem size (N)", "values");
-  }
-
-  // resultsTable.addRow({N, elapsed_seconds});
-  // rangeSize[timeRange(elapsed_seconds)] += string(" ") +=
-  // std::to_string(N);
-
-  // Prepare table with time ranges
-  // for (unsigned int i = 0; i < rangeThreshold.size(); ++i) {
-  //   string doubleString = std::to_string(rangeThreshold[i]);
-  //   string col1 = doubleString.substr(0, doubleString.find(".") + 2);
-  //   rangesTable.addRow({"<= " + col1, rangeSize[i]});  // \u2264
-  // }
-  // string lastString = std::to_string(rangeThreshold.back());
-  // string col1 = lastString.substr(0, lastString.find(".") + 2);
-  // rangesTable.addRow({">  " + col1, rangeSize.back()});
-
-  // // Print to file
-  // fileres << "--- SUMMARY OF RESULTS ---\n\n";
-  // fileres << "Execution times:\n";
-  // resultsTable.print(fileres);
-  // fileres << "\nDistribution of problems in each time range:\n";
-  // rangesTable.print(fileres);
-  // // Print to console
-  // if (P.print_console) {
-  //   cout << "\n--- SUMMARY OF RESULTS ---\n";
-  //   resultsTable.print(cout);
-  //   rangesTable.print(cout);
-  // }
-  catch (std::exception& e) {
+  } catch (std::exception& e) {
     std::cout << ">>> EXCEPTION: " << e.what() << std::endl;
   }
   sol_cplex.close();

@@ -37,10 +37,13 @@ vector<vertex>* utils::naiveTour(const unsigned int N) {
  * @return cost of final tour
  */
 double utils::nearestNeighbour(const double* C, const unsigned int N) {
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine re(seed);
+  std::uniform_int_distribution<unsigned int> rndInt(0, N - 1);
   vector<vertex>* tour = new vector<vertex>;
   vector<bool> visited(N, false);
   double cost = 0.0;
-  tour->push_back(0);
+  tour->push_back(rndInt(re));
   for (vertex v = tour->back(); !visited[v]; v = tour->back()) {
     double bestCost = std::numeric_limits<double>::max();
     vertex cheapestNeighbour = N;
