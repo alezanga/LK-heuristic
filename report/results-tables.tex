@@ -1,157 +1,111 @@
 % !TeX spellcheck = en_GB
 % !TeX root = memoco-report.tex
 
-
-\begin{table}[h]
+\renewcommand{\arraystretch}{1.2}
+%\setlength{\arrayrulewidth}{1pt}
+\begin{table}[H]
 	\caption{Test results on size 10}
 	\label{tab:t10}
-	\setlength\tabcolsep{4pt}
-	\begin{subtable}[t]{0.35\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Percentage relative error}            \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5        & 0    & 0        & 0   & 0   \\
-			15       & 0    & 0        & 0   & 0   \\
-			30       & 0    & 0        & 0   & 0  
-		\end{tabular}
-	\end{subtable}
-	\hspace{1.8cm}
-	\begin{subtable}[t]{0.42\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Execution time}            \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5 & 0.125e-2 & 0.127e-2 & 0.433e-3 & 0.438e-2 \\
-			15 & 0.409e-2 & 0.311e-2 & 0.140e-2 & 0.974e-2 \\
-			30 & 0.114e-1 & 0.445e-2 & 0.614e-2 & 0.219e-1  
-		\end{tabular}
-	\end{subtable}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0    & 0        & 0   & 0 & \num{0.125e-2} & \num{0.127e-2} & \num{0.433e-3} & \num{0.438e-2} \\
+		15       & 0    & 0        & 0   & 0 & \num{0.409e-2} & \num{0.311e-2} & \num{0.140e-2} &\num{0.974e-2} \\
+		30       & 0    & 0        & 0   & 0 & \num{0.114e-1} & \num{0.445e-2} & \num{0.614e-2} & \num{0.219e-1} 
+	\end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 	\caption{Test results on size 30}
 	\label{tab:t30}
-	\setlength\tabcolsep{4pt}
-	\begin{subtable}[t]{0.35\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Percentage relative error} \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5        & 0    & 0        & 0   & 0   \\
-			15       & 0    & 0        & 0   & 0   \\
-			30       & 0    & 0        & 0   & 0  
-		\end{tabular}
-	\end{subtable}
-	\hspace{2.5cm}
-	\begin{subtable}[t]{0.42\linewidth}
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Execution time} \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5 & 0.127 & 0.121e-1 & 0.109 & 0.149 \\
-			15 & 0.407 & 0.616e-1 & 0.326 & 0.503 \\
-			30 & 0.766 & 0.829e-1 & 0.669 & 0.971  
-		\end{tabular}
-	\end{subtable}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0    & 0        & 0   & 0 & 0.127 & \num{0.121e-1} & 0.109 & 0.149 \\
+		15       & 0    & 0        & 0   & 0 & 0.407 & \num{0.616e-1} & 0.326 & 0.503 \\
+		30       & 0    & 0        & 0   & 0 & 0.766 & \num{0.829e-1} & 0.669 & 0.971
+	\end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 	\caption{Test results on size 50}
 	\label{tab:t50}
-	\setlength\tabcolsep{4pt}
-	\begin{subtable}[t]{0.35\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Percentage relative error}  \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5        & 0    & 0        & 0   & 0   \\
-			15       & 0    & 0        & 0   & 0   \\
-			30       & 0    & 0        & 0   & 0  
-		\end{tabular}
-	\end{subtable}
-	\hspace{1.8cm}
-	\begin{subtable}[t]{0.42\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Execution time} \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5 & 0.139 & 0.205e-1 & 0.119 & 0.179 \\
-			15 & 0.448 & 0.791e-1 & 0.347 & 0.605 \\
-			30 & 0.897 & 0.914e-1 & 0.784 & 0.105e+1
-		\end{tabular}
-	\end{subtable}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0    & 0        & 0   & 0 & 0.139 & \num{0.205e-1} & 0.119 & 0.179 \\
+		15       & 0    & 0        & 0   & 0 & 0.448 & \num{0.791e-1} & 0.347 & 0.605 \\
+		30       & 0    & 0        & 0   & 0 & 0.897 & \num{0.914e-1} & 0.784 & \num{0.105e+1}
+	\end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 	\caption{Test results on size 70}
-	\label{tab:t50}
-	\setlength\tabcolsep{4pt}
-	\begin{subtable}[t]{0.35\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Percentage relative error}  \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5        & 0    & 0        & 0   & 0   \\
-			15       & 0    & 0        & 0   & 0   \\
-			30       & 0    & 0        & 0   & 0  
-		\end{tabular}
-	\end{subtable}
-	\hspace{1.8cm}
-	\begin{subtable}[t]{0.42\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Execution time} \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5 & 0.418 & 0.469e-1 & 0.331 & 0.479 \\
-			15 & 0.121e+1 & 0.607e-1 & 0.109e+1 & 0.130e+1 \\
-			30 & 0.241e+1 & 0.109 & 0.226e+1 & 0.264e+1
-		\end{tabular}
-	\end{subtable}
+	\label{tab:t70}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0    & 0        & 0   & 0 & 0.418 & \num{0.469e-1} & 0.331 & 0.479 \\
+		15       & 0    & 0        & 0   & 0 & \num{0.121e+1} & \num{0.607e-1} & \num{0.109e+1} & \num{0.130e+1} \\
+		30       & 0    & 0        & 0   & 0 & \num{0.241e+1} & 0.109 & \num{0.226e+1} & \num{0.264e+1}
+	\end{tabular}
 \end{table}
 
-\begin{table}[h]
-	\caption{Test results on size 80 TODO}
-	\label{tab:t50}
-	\setlength\tabcolsep{4pt}
-	\begin{subtable}[t]{0.35\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Percentage relative error}  \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5        & 0    & 0        & 0   & 0   \\
-			15       & 0    & 0        & 0   & 0   \\
-			30       & 0    & 0        & 0   & 0  
-		\end{tabular}
-	\end{subtable}
-	\hspace{1.8cm}
-	\begin{subtable}[t]{0.42\linewidth}
-		\centering
-		\rowcolors{2}{mylred}{white}
-		\begin{tabular}[t]{ccccc}
-			\hline
-			\multicolumn{5}{c}{Execution time} \\ \hline
-			Restarts & Mean & Std. dev & Min & Max \\ \hline
-			5 & 0.418 & 0.469e-1 & 0.331 & 0.479 \\
-			15 & 0.121e+1 & 0.607e-1 & 0.109e+1 & 0.130e+1 \\
-			30 & 0.241e+1 & 0.109 & 0.226e+1 & 0.264e+1
-		\end{tabular}
-	\end{subtable}
+\begin{table}[H]
+	\caption{Test results on size 80}
+	\label{tab:t80}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0.192& 0.236& 0   & 0.481  & 0.617 & 0.167 & 0.427 & \num{0.108e+1} \\
+		15       & 0    & 0        & 0   & 0  & \num{0.183e+1} & 0.178 & \num{0.148e+1} & \num{0.213e+1} \\
+		30       & 0    & 0        & 0   & 0  & \num{0.374e+1} & 0.291 & \num{0.332e+1} & \num{0.420e+1}
+	\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+	\caption{Test results on size 100}
+	\label{tab:t100}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0.320    & 0.209  & 0.128   & 0.769 & 0.950 & 0.160 & 0.689 & \num{0.125e+1} \\
+		15       & 0.128    & 0.152  & 0   & 0.513  & \num{0.277e+1} & 0.237 & \num{0.246e+1} & \num{0.337e+1} \\
+		30       & \num{0.769e-1}    & \num{0.628e-1} & 0   & 0.128 & \num{0.577e+1} & 0.526 & \num{0.518e+1} & \num{0.722e+1}  
+	\end{tabular}
+\end{table}
+
+\begin{table}[H]
+	\caption{Test results on size 110}
+	\label{tab:t110}
+	%\setlength\tabcolsep{5pt}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0.484    & 0.254  & 0   & 0.806 & \num{0.129e1} & 0.145 & \num{0.106e+1} & \num{0.155e+1} \\
+		15       & 0.202    & 0.197  & 0   & 0.504  & \num{0.418e+1} & 0.390 & \num{0.360e+1} & \num{0.514e+1} \\
+		30       & \num{0.806e-1}    & 0.134 & 0   & 0.403 & \num{0.831e+1} & 0.604 & \num{0.740e+1} & \num{0.929e+1}
+	\end{tabular}
 \end{table}

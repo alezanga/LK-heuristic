@@ -133,8 +133,15 @@ Since trying to improve a previously found local optima will likely fail, the pr
 To do this, an \texttt{std::set} data structure is used, which maintains a sorted collection (ordered by tour cost) of all the feasible tours found at each iteration. This container guarantees logarithmic insertion and search operations.\\
 As a possible improvement to this strategy, one could keep track of the edges modified while converging to the previously encountered solution, and make sure that at least some of these are not added again, which can potentially lead to the same solution again, or to a very similar one.
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=10cm]{path_50_random}
+	\caption{Random initial path on a problem with 50 points}
+	\label{fig:randomtour}
+\end{figure}
+
 \subsection{Random restart}
-The described heuristic is run from a randomized initial solution. Using an initial solution generated with a fast constructive heuristic has been tried, and a faster convergence has been registered, even though the produced solution was often not better than the solution generated from a random initial solution.
+The described heuristic is run from a randomized initial solution, like the one in \cref{fig:randomtour}. Using an initial solution generated with a fast constructive heuristic has been tried, and a faster convergence has been registered, even though the produced solution was often not better than the solution generated from a random initial solution.
 Despite this the starting tour has a significant impact on the heuristic performance, since it determines the edges that will be tried for the first move. As can be seen by the calibration tests in the next section, the algorithm often does not explore more than the first two candidates to be joined. This explains why the initial tour greatly contributes to the final result.\\
 By restarting the heuristic many times on the same instances of the synthetic dataset, on average, the heuristic will produce tours 3-4\% from the optimal one. But the best solution found during a reasonable number of restarts is usually much closer to the optimal one. This strategy has been implemented in the file \texttt{IteratedLK.cpp}, where the procedure \texttt{iterated\_LK} can be used for this purpose, by setting the desired number of restarts in the \texttt{config.yml} configuration file (parameter \texttt{LK\_iterations}). Further considerations on the best number of iterations are discussed on the calibration section.
 

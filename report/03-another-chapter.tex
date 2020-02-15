@@ -3,20 +3,81 @@
 
 \section{Tests and results}
 \label{sec:results}
-The described heuristic has been tested on instances generated as described in \cref{sec:datasetgen}, and its solution has been compared with the optimal solution obtained with the exact method. This has been done for instances of size up to 110, since the exact method could not solve instances of bigger size. In addition the same tests have been performed on some symmetric drilling problems from TSPLIB, namely \texttt{d198}, \texttt{d493} and \texttt{d657}, with respect to the optimal solutions listed at \cite{Tsplibsol}.
+The described heuristic has been tested on instances generated as described in \cref{sec:datasetgen}, and its solution has been compared with the optimal solution obtained with the exact method. This has been done for instances of size up to 110, since the exact method employed too much time to solve bigger problems. In addition the same tests have been performed on some symmetric drilling problems from TSPLIB, namely \texttt{d198}, \texttt{d493} and \texttt{d657}, with respect to the optimal solutions listed at \cite{Tsplibsol}.
 The parameters were set with the following values:
 \begin{itemize}
 	\setlength\itemsep{0.03em}
-	\item a
-	\item b
-	\item c
-	\item d
-	\item e
-	\item f
+	\item K = 400 (so unbounded for size 10-110)
+	\item I = 1000
+	\item \texttt{max\_neighbours = 5}
+	\item \texttt{backtracking\_threshold = 3}
+	\item \texttt{intens\_min\_depth = 5}
+	\item \texttt{intens\_n\_tours = 50}
 \end{itemize}
+Parameter \texttt{backtracking\_threshold} and \texttt{intens\_n\_tours} were set to a compromise between the best values found during calibration, and \texttt{intens\_min\_depth} was set to 5, since this value seemed to work best with size 90. Finally \texttt{max\_neighbours} was set to 5 because it resulted in a lower average error in both calibrations.
 
 \subsection{Tests on syntetic dataset}
-For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value was computed for both execution times and for relative percentage error with respect to the optimal value. The following tables summarizes the results obtained.
+For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value was computed for both execution times and relative percentage error with respect to the optimal value. Tables \ref{tab:t10} - \ref{tab:t110} contains the results for some problems. Figure \ref{fig:ploterr} and \ref{fig:plotime} summarise the results for tests with 15 restarts. In addition figure \ref{fig:logtime} compares the execution times of the two methods. Here the heuristic time is the arithmetic mean of the 10 executions with 15 restarts.
 
 \input{results-tables}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{error_plot}
+	\caption{Error statistics over 10 runs with 15 restarts}
+	\label{fig:ploterr}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{time_plot}
+	\caption{Execution time statistics over 10 runs with 15 restarts}
+	\label{fig:plotime}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.9\textwidth]{logtime_plot}
+	\caption{Comparison of execution times for both methods (multiplied by 1000, logarithmic scale)}
+	\label{fig:logtime}
+\end{figure}
+
+\subsection{Tests on bigger instances}
+Table \ref{tab:tsplibr} lists the results of testing the heuristic method with some bigger instances taken from TSPLIB. Extensive tests would require much time, so these results come from a single execution of the heuristic with the same parameters used for previous tests, but with 30 restarts instead of 15. For problem \texttt{d657} parameter \texttt{backtracking\_threshold} was lowered to 2 to reduce running time.  The produced solution paths are shown in figures \ref{fig:p198}, \ref{fig:p493} and \ref{fig:p657}.
+
+\begin{table}[h]
+	\caption{Results on TSPLIB problems}
+	\label{tab:tsplibr}
+	\centering
+	\begin{tabular}[t]{cccccc}
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Problem} & \textbf{Size} & \textbf{Optimal value} & \textbf{Heuristic value} & \textbf{Relative error (\%)} & \textbf{Time (s)} \\
+		d198    & 198 & 15780 & 15852.9 & 0.462  & 266   \\
+		d493    & 493 & 35002 & 35428.1 & 1.217 & 3638	\\
+		d657 *	& 657 & 48912 & 49892.1 & 2.004	&  2032 \\
+		\multicolumn{6}{l}{\rule{0pt}{4ex}*\texttt{backtracking\_threshold = 2}} 
+	\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{path_198}
+	\caption{Heuristic solution for d198}
+	\label{fig:p198}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{path_493}
+	\caption{Heuristic solution for d493}
+	\label{fig:p493}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{path_657}
+	\caption{Heuristic solution for d657}
+	\label{fig:p657}
+\end{figure}
+
 

@@ -24,6 +24,7 @@
 \usepackage{longtable}                     
 \usepackage{ltxtable} 
 \usepackage{pgfplots}
+\usepackage{float}    
 \pgfplotsset{compat=newest}
 \pgfplotsset{plot coordinates/math parser=false}
 \newlength\figureheight
@@ -73,7 +74,8 @@ set decimal separator={,\!},
 \usepackage{multirow}
 \usepackage[footnote]{acronym}
 \usepackage{url}
-\usepackage{filecontents}
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
 \usepackage{ifthen}
 \usepackage{ifpdf}
 \ifpdf

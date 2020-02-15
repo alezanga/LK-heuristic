@@ -47,11 +47,13 @@ The provided archive comes with the following structure:
 }
 
 \subsubsection{How to run}
-In order to run the program the following packages must be installed:
+The program has the following dependences:
 \begin{itemize}
 	\item \texttt{g++ 7} or higher;
 	\item \texttt{IBM ILOG CPLEX Optimization Studio 12.8} or higher;
-	\item \texttt{Python 2.7} (only if you want to see some graphs).
+	\item \texttt{Python 2.7}.
 \end{itemize}
 
-To run the program from a Linux environment you should set the desired parameters in the file \texttt{config.yml}, then compile and run with \texttt{make \&\& ./bin/main}.
+To test the program, some instances should be generated or imported by placing them in the \texttt{instances/} folder. To generate some instances set \texttt{generate\_instances: true} in the \texttt{config.yml} file, and the other parameters as desired. If \texttt{N\_min = 20, N\_incr = 5, N\_max = 30} three \texttt{csv} files containing the coordinates of each point will be generated, with size 20, 25 and 30 respectively, and will be placed in the instances folder. After that it is possible to run the exact method or the heuristic on these instances. To do that add to the list in \texttt{instances\_to\_read} the filename (without extension) of the files that should be read and set \texttt{solve\_heur} and \texttt{solve\_cplex} as desired. Some reasonable parameters for the heuristic are already set, but it is possible to change them if necessary. The script can then be run from a Linux environment with \texttt{make \&\& ./bin/main}. The algorithm writes its output in file \texttt{solLK.txt} and \texttt{solCPLEX.txt} under the \texttt{files/} folder. These files are written between the various iterations, so you can check them to monitor the progress. Additionally running the heuristic also produces an image of the final solution and places it in folder \texttt{plots/}.\\
+
+
