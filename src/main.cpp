@@ -115,11 +115,13 @@ void testTimes(const Params& P) {
       delete[] cost;
     }
 
-    // Plot data with Python
-    Py.plot_times(cplex_times, heur_times,
-                  "Execution times for each problem size (N)", "times");
-    Py.plot_errors(cplex_values, heur_values,
-                   "Objective values for problem size (N)", "values");
+    if (P.solve_cplex && P.solve_heur) {
+      // Plot data with Python
+      Py.plot_times(cplex_times, heur_times,
+                    "Execution times for each problem size (N)", "times");
+      Py.plot_errors(cplex_values, heur_values,
+                     "Objective values for problem size (N)", "errors");
+    }
   } catch (std::exception& e) {
     std::cout << ">>> EXCEPTION: " << e.what() << std::endl;
   }
