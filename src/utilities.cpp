@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <experimental/filesystem>
 #include <random>
 #include <set>
 
@@ -125,7 +124,8 @@ pair<TSPsolution, double> utils::runILK(const Params& P, const unsigned int N,
 pair<TSPsolution, double> utils::runOptimal(const Params& P,
                                             const unsigned int N,
                                             const double* costs,
-                                            ostream& log_cplex) {
+                                            const fs::path& logd) {
+  std::ofstream log_cplex((logd / "solCPLEX.txt").string(), std::ofstream::out);
   std::cout << "Solving with optimal algorithm..." << std::endl;
   std::chrono::_V2::system_clock::time_point start, end;
   double elapsed_seconds;
@@ -141,5 +141,6 @@ pair<TSPsolution, double> utils::runOptimal(const Params& P,
   TSPsolution cplex_res = mod.getSolution();
   log_cplex << "Solved in: " << elapsed_seconds << " sec\n" << cplex_res;
 
+  log_cplex.close();
   return {cplex_res, elapsed_seconds};
 }

@@ -1,6 +1,7 @@
 #ifndef ITER_LK_H
 #define ITER_LK_H
 
+#include <experimental/filesystem>
 #include <fstream>
 #include <vector>
 
@@ -19,8 +20,9 @@ double nearestNeighbour(const double*, const unsigned int);
 std::pair<TSPsolution, double> runILK(const Params&, const unsigned int,
                                       const double*, std::ostream&);
 
-std::pair<TSPsolution, double> runOptimal(const Params&, const unsigned int,
-                                          const double*, std::ostream&);
+std::pair<TSPsolution, double> runOptimal(
+    const Params&, const unsigned int, const double*,
+    const std::experimental::filesystem::path&);
 
 }  // namespace utils
 

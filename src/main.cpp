@@ -43,8 +43,9 @@ void generateInstances(const Params& P) {
 
 pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
                                        const TSPinstance& coords,
-                                       unsigned int N, ofstream& log_lk,
+                                       unsigned int N, const fs::path& logd,
                                        const PyWrapper& py) {
+  std::ofstream log_lk((logd / "solLK.txt").string(), std::ofstream::out);
   cout << "Solving with heuristic..." << std::endl;
   // LK model
   pair<TSPsolution, double> lk_res = utils::runILK(P, N, costs, log_lk);
@@ -57,6 +58,7 @@ pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
   py.plot_points(*(coords.getPoints()), lk_res.first.vtour,
                  "path_" + std::to_string(N));
 
+  log_lk.close();
   return lk_res;
 }
 
@@ -64,8 +66,6 @@ void testTimes(const Params& P) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
-  std::ofstream sol_cplex((logd / "solCPLEX.txt").string(), std::ofstream::out);
-  std::ofstream sol_lk((logd / "solLK.txt").string(), std::ofstream::out);
 
   TSPinstance coords;
 
@@ -100,12 +100,12 @@ void testTimes(const Params& P) {
       double* cost = coords.costMatrix();
       cout << "Loaded file " << filename << std::endl;
       if (P.solve_heur) {
-        solheur = runHeuristic(P, cost, coords, N, sol_lk, Py);
+        solheur = runHeuristic(P, cost, coords, N, logd, Py);
         heur_times.push_back({N, solheur.second});
         heur_values.push_back({N, solheur.first.objVal});
       }
       if (P.solve_cplex) {
-        solopt = utils::runOptimal(P, N, cost, sol_cplex);
+        solopt = utils::runOptimal(P, N, cost, logd);
         cplex_times.push_back({N, solopt.second});
         cplex_values.push_back({N, solopt.first.objVal});
       }
@@ -125,8 +125,6 @@ void testTimes(const Params& P) {
   } catch (std::exception& e) {
     std::cout << ">>> EXCEPTION: " << e.what() << std::endl;
   }
-  sol_cplex.close();
-  sol_lk.close();
 }
 
 int main() {
