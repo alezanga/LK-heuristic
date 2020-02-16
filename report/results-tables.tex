@@ -1,7 +1,7 @@
 % !TeX spellcheck = en_GB
 % !TeX root = memoco-report.tex
 
-\renewcommand{\arraystretch}{1.2}
+%\renewcommand{\arraystretch}{1.2}
 %\setlength{\arrayrulewidth}{1pt}
 \begin{table}[H]
 	\caption{Test results on size 10}
@@ -107,5 +107,26 @@
 		5        & 0.484    & 0.254  & 0   & 0.806 & \num{0.129e1} & 0.145 & \num{0.106e+1} & \num{0.155e+1} \\
 		15       & 0.202    & 0.197  & 0   & 0.504  & \num{0.418e+1} & 0.390 & \num{0.360e+1} & \num{0.514e+1} \\
 		30       & \num{0.806e-1}    & 0.134 & 0   & 0.403 & \num{0.831e+1} & 0.604 & \num{0.740e+1} & \num{0.929e+1}
+	\end{tabular}
+\end{table}
+
+\begin{table}[H]
+	\caption{Execution times for exact method}
+	\label{tab:cplextime}
+	\centering
+	\begin{tabular}[t]{cc}
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Problem size} & \textbf{Execution time (s)} \\
+		10        & \num{0.294e-1}    \\
+		20       & 0.151 \\
+		30       & 0.466 \\ 
+		40       & \num{0.194e1} \\
+		50       & \num{0.350e1} \\
+		60       & \num{0.579e1} \\
+		70       & \num{0.515e2} \\
+		80       & \num{0.649e2} \\
+		90       & \num{0.968e2} \\
+		100      & \num{0.697e3} \\
+		110      & \num{0.404e3} \\
 	\end{tabular}
 \end{table}

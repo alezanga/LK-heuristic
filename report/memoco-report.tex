@@ -59,14 +59,6 @@ set decimal separator={,\!},
 \let\@texttop\relax
 \makeatother
 
-\makeatletter
-\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else%
-  \hbox{}%
-  \thispagestyle{empty}%
-  \newpage%
-  \if@twocolumn\hbox{}\newpage\fi\fi\fi}
-\makeatother
-
 \usepackage{amsthm}
 \usepackage{amssymb,amsmath,bbm}
 \usepackage{array}
@@ -151,31 +143,34 @@ set decimal separator={,\!},
 	\else      (Cited on pages~#2.)%
 	\fi}
 
-\newtheoremstyle{break}
-  {11pt}{11pt}%
-  {\itshape}{}%
-  {\bfseries}{}%
-  {\newline}{}%
-\theoremstyle{break}
+%\newtheoremstyle{break}
+%  {11pt}{11pt}%
+%  {\itshape}{}%
+%  {\bfseries}{}%
+%  {\newline}{}%
+%\theoremstyle{break}
 
-%\theoremstyle{definition}
-\newtheorem{definition}{Définition}[section]
-
-%\theoremstyle{definition}
-\newtheorem{theoreme}{Théorème}[section]
-
-%\theoremstyle{remark}
-\newtheorem{remarque}{Remarque}[section]
-
-%\theoremstyle{plain}
-\newtheorem{propriete}{Propriété}[section]
-\newtheorem{exemple}{Exemple}[section]
+%%\theoremstyle{definition}
+%\newtheorem{definition}{Définition}[section]
+%
+%%\theoremstyle{definition}
+%\newtheorem{theoreme}{Théorème}[section]
+%
+%%\theoremstyle{remark}
+%\newtheorem{remarque}{Remarque}[section]
+%
+%%\theoremstyle{plain}
+%\newtheorem{propriete}{Propriété}[section]
+%\newtheorem{exemple}{Exemple}[section]
 \definecolor{mylred}{HTML}{ffe4e1}
 \definecolor{myred}{HTML}{b63e33}
+\definecolor{mylgrey}{HTML}{F1F1F1}
 
 \newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}
 
 \parskip=5pt
+\setlength\parindent{0pt}
+\renewcommand{\arraystretch}{1.2}
 %\sloppy
 
 \begin{document}
@@ -268,13 +263,17 @@ The following report documents the course project, which demanded the developmen
 
 \cleardoublepage
 
-\include{01-introduction}
-\include{02-first-chapter}
-\include{03-another-chapter}
-\include{04-conclusion}
+\input{01-introduction}
+\clearpage
+\input{02-first-chapter}
+\clearpage
+\input{03-another-chapter}
+\clearpage
+\input{04-conclusion}
 
-\appendix
+%\appendix
 
+\clearpage
 \bibliographystyle{alpha}
 \bibliography{references}
 

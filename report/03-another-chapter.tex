@@ -16,10 +16,17 @@ The parameters were set with the following values:
 \end{itemize}
 Parameter \texttt{backtracking\_threshold} and \texttt{intens\_n\_tours} were set to a compromise between the best values found during calibration, and \texttt{intens\_min\_depth} was set to 5, since this value seemed to work best with size 90. Finally \texttt{max\_neighbours} was set to 5 because it resulted in a lower average error in both calibrations.
 
-\subsection{Tests on syntetic dataset}
-For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value was computed for both execution times and relative percentage error with respect to the optimal value. Tables \ref{tab:t10} - \ref{tab:t110} contains the results for some problems. Figure \ref{fig:ploterr} and \ref{fig:plotime} summarise the results for tests with 15 restarts. In addition figure \ref{fig:logtime} compares the execution times of the two methods. Here the heuristic time is the arithmetic mean of the 10 executions with 15 restarts.
+\subsection{Tests on synthetic dataset}
+For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value were computed for both execution times and relative percentage error with respect to the optimal value. Tables \ref{tab:t10} - \ref{tab:t110} contains the results for some problems. Figure \ref{fig:path110} shows the heuristic solution for the bigger problem. Plots in figures \ref{fig:ploterr} and \ref{fig:plotime} summarise the results for tests with 15 restarts. In addition figure \ref{fig:logtime} compares the execution times of the two methods. Here the heuristic time is the arithmetic mean of the 10 executions with 15 restarts. Finally, \cref{tab:cplextime} lists the execution times for the exact method, which was run once for every instance.
 
 \input{results-tables}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{path_110}
+	\caption{Produced solution for problem of size 110 (optimal in this case)}
+	\label{fig:path110}
+\end{figure}
 
 \begin{figure}[H]
 	\centering

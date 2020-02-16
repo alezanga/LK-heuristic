@@ -8,9 +8,9 @@ instances_to_read: [tsp_50]
 # Instance generation parameters
 # If generate_instances = false the others are ignored
 generate_instances: false
-N_min: 100
-N_incr: 5
-N_max: 100
+N_min: 10
+N_incr: 10
+N_max: 110
 
 # Params for LK heuristic
 # Max lenght of alternating path to search for

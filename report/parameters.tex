@@ -5,7 +5,7 @@
 \setlength{\arrayrulewidth}{1.2pt}
 \rowcolors{2}{mylred}{white}
 \begin{longtable}{lX}
-	\caption{Hyperparameters of the heuristic algorithm}\\
+	\caption{Parameters of the heuristic algorithm}\\
 	\hline
 	\rowcolor{myred} % o NavyBlue
 	\color{white}\textbf{Parameter} & \color{white}\textbf{Description}\\
@@ -24,9 +24,9 @@
 	K  & The maximum size of an improving k-opt move. If the algorithm doesn't find a move of size $\le K$ it will stop searching  \\
 	I  & Max number of improving iterations \\
 	max\_neighbours   & The maximum number of edges $y_i$ to consider at every iteration \\
-	backtracking\_threshold & During the search for a move of size $2 \le j \le backtracking\_threshold$, if the feasible choice of edge $x_j$ fails to improve the solution, the algorithm will consider the other possibility, even if it is not feasible. In this case the only way to improve is by satisfying the feasibility criterion with moves of size $> j$\\
+	backtracking\_threshold & During the search for an exchange of size $2 \le j \le backtracking\_threshold$, if the feasible choice of edge $x_j$ fails to improve the solution, the algorithm will consider the other possibility, even if it is not feasible. In this case the only way to improve is by satisfying the feasibility criterion with exchanges of size $> j$\\
 	intens\_min\_depth & The minimum move size before applying the intensification constraints (as discussed in \cref{sssec:intensification})\\
-	intens\_n\_tours & The number of best solutions to keep and to use for intensification. The algorithm will compute this number of local optima before applying intensification\\
+	intens\_n\_tours & The number of best solutions to keep and to use for intensification. The algorithm will compute this number of local optima before applying intensification  (it is the $S$ discussed in \cref{sssec:intensification})\\
 	LK\_iterations & The number of times to restart the heuristic from a random tour.
 	\label{tab:hyperparameters} \\
 \end{longtable}
