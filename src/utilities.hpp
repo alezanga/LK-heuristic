@@ -20,9 +20,8 @@ double nearestNeighbour(const double*, const unsigned int);
 std::pair<TSPsolution, double> runILK(const Params&, const unsigned int,
                                       const double*, std::ostream&);
 
-std::pair<TSPsolution, double> runOptimal(
-    const Params&, const unsigned int, const double*,
-    const std::experimental::filesystem::path&);
+std::pair<TSPsolution, double> runOptimal(const Params&, const unsigned int,
+                                          const double*, std::ostream&);
 
 }  // namespace utils
 

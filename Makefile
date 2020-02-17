@@ -12,6 +12,8 @@ ODIR = build
 SRCDIR = src
 BIN = bin
 
+$(shell mkdir -p $(ODIR) $(BIN))
+
 OBJ = $(ODIR)/CPLEX.o $(ODIR)/TSPsolution.o $(ODIR)/TSPinstance.o \
 	$(ODIR)/Tour.o $(ODIR)/LK.o $(ODIR)/utilities.o $(ODIR)/Pair.o
 
@@ -35,5 +37,3 @@ clean:
 		rm -rf $(OBJ) $(OTHERS) $(SRCDIR)/*.pyc $(SRCDIR)/__pycache__
 
 .PHONY: clean
-
-$(shell mkdir -p $(ODIR) $(SRCDIR))

@@ -19,6 +19,7 @@
 
 using std::cout;
 using std::ofstream;
+using std::ostream;
 using std::pair;
 using std::string;
 using std::vector;
@@ -43,9 +44,8 @@ void generateInstances(const Params& P) {
 
 pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
                                        const TSPinstance& coords,
-                                       unsigned int N, const fs::path& logd,
+                                       unsigned int N, ostream& log_lk,
                                        const PyWrapper& py) {
-  std::ofstream log_lk((logd / "solLK.txt").string(), std::ofstream::out);
   cout << "Solving with heuristic..." << std::endl;
   // LK model
   pair<TSPsolution, double> lk_res = utils::runILK(P, N, costs, log_lk);
@@ -58,17 +58,24 @@ pair<TSPsolution, double> runHeuristic(const Params& P, double* costs,
   py.plot_points(*(coords.getPoints()), lk_res.first.vtour,
                  "path_" + std::to_string(N));
 
-  log_lk.close();
   return lk_res;
 }
 
-void testTimes(const Params& P) {
+ofstream* getStream(const Params& P, bool lk) {
   // Create new dir. Does nothing if it's already there.
   fs::create_directory("files");
   fs::path logd = fs::current_path() / "files";
+  if (lk && P.solve_heur)
+    return new ofstream((logd / "solLK.txt").string(), ofstream::out);
+  if (!lk && P.solve_cplex)
+    return new ofstream((logd / "solCPLEX.txt").string(), ofstream::out);
+  return new ofstream;  // Deafult does not write
+}
 
+void testTimes(const Params& P) {
   TSPinstance coords;
 
+  if (P.solve_heur) fs::create_directory("plots");
   fs::path insd = fs::current_path() / "instances";
   try {
     // Declare tables to hold results
@@ -89,6 +96,8 @@ void testTimes(const Params& P) {
     pair<TSPsolution, double> solopt, solheur;
     unsigned int N = 0;
 
+    ofstream *log_lk = getStream(P, true), *log_cplex = getStream(P, false);
+
     for (auto& file : fs::directory_iterator(insd)) {
       string filename = file.path().filename().string();
       string stem = file.path().stem().string();
@@ -100,20 +109,24 @@ void testTimes(const Params& P) {
       double* cost = coords.costMatrix();
       cout << "Loaded file " << filename << std::endl;
       if (P.solve_heur) {
-        solheur = runHeuristic(P, cost, coords, N, logd, Py);
+        solheur = runHeuristic(P, cost, coords, N, *log_lk, Py);
         heur_times.push_back({N, solheur.second});
         heur_values.push_back({N, solheur.first.objVal});
       }
       if (P.solve_cplex) {
-        solopt = utils::runOptimal(P, N, cost, logd);
+        solopt = utils::runOptimal(P, N, cost, *log_cplex);
         cplex_times.push_back({N, solopt.second});
         cplex_values.push_back({N, solopt.first.objVal});
       }
 
       cout << std::endl;
-
       delete[] cost;
     }
+
+    log_lk->close();
+    log_cplex->close();
+    delete log_lk;
+    delete log_cplex;
 
     if (P.solve_cplex && P.solve_heur) {
       // Plot data with Python

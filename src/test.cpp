@@ -74,7 +74,7 @@ void test(Params& P) {
     vector<vector<double>> err_size;
     data.generateRandomPolygons(size);
     double* C = data.costMatrix();
-    auto [solo, timeo] = utils::runOptimal(P, size, C, logd);
+    auto [solo, timeo] = utils::runOptimal(P, size, C, log);
     plot_data.addRow({size, timeo});
 
     for (unsigned int inst = 0; inst < P.runs_per_instance; ++inst) {
