@@ -31,13 +31,7 @@ The model can be solved calling the function \texttt{solve}, which calls the IBM
 
 The implemented heuristic is inspired by a popular local search method called Lin-Kernighan heuristic, originally proposed in 1973 in \cite{LinK73}. The algorithm can be considered a generalization of the k-opt algorithm: one of the drawbacks of this algorithm is that the parameter $k$ must be fixed in advance. Instead, the Lin-Kerighan algorithm decides at each iteration, for ascending values of $k$, whether an interchange of $k$ edges provides a better solution. Thus, the algorithm is specified in terms of exchanges that can convert one tour into another: given a feasible interchange of $k$ edges (a \textit{k-move}), the algorithm tries to determine if there exists a $k+1$-move that improves the tour further. 
 During each iteration, given a feasible tour, the algorithm repeatedly performs exchanges that reduce the length of the current tour, until a tour is reached for which no exchange yields an improvement. This process may be repeated many times from initial tours generated in some possibly randomized way \cite{Helsgaun2000}.\\
-So at each iteration the algorithm tries to determine the largest set $X=\{x_1, x_2, ..., x_j\}$ and $Y=\{y_1, y_2, ..., y_j\}$ such that if edges in $X$ (also called the \emph{broken} edges) are removed and replaced by $Y$ (the \emph{joined} edges) the produced tour is a feasible improved (i.e. less costly) solution. Of course, a naive brute force algorithm searching for this sets, would quickly become impractical due to the exponential running time. In order to produce a reasonably efficient local search procedure, the algorithm reduce the search space using the following criteria:
-\begin{figure}[]
-	\centering
-	\includegraphics[width=6cm]{double-bridge}
-	\caption{A non sequential \emph{double bridge} move with $k=4$}
-	\label{fig:doublebridge}
-\end{figure}
+So at each iteration the algorithm tries to determine the largest set $X=\{x_1, x_2, ..., x_j\}$ and $Y=\{y_1, y_2, ..., y_j\}$ such that if edges in $X$ (also called the \emph{broken} edges) are removed and replaced by $Y$ (the \emph{joined} edges) the produced tour is a feasible improved (i.e. less costly) solution. Of course, a naive brute force algorithm searching for this sets, would quickly become impractical to use, due to the exponential running time. In order to produce a reasonably efficient local search procedure, the algorithm reduce the search space using the following criteria:
 
 \begin{enumerate}
 	\item \emph{Sequential exchange criterion}: each pair of edges $(x_i, y_i)$ and $(y_i, x_{i+1})$ must share one vertex. If $t_1$ and $t_2$ are the vertices of edge $x_1$, then in general for all $i \ge 1$ exchanges are performed this way: $x_i=(t_{2i-1}, t_{2i})$ and $y_i=(t_{2i}, t_{2i+1})$ and $x_{i+1}=(t_{2i+1}, t_{2i+2})$.\\ All \emph{sequential} k-opt moves can be found by concatenating smaller sequential moves, but \emph{non sequential} moves cannot be found with this algorithm. An example of such a move is given in \cref{fig:doublebridge}.
@@ -47,6 +41,13 @@ So at each iteration the algorithm tries to determine the largest set $X=\{x_1, 
 	\item \emph{Disjunctivity criterion}: sets $X$ and $Y$ must be disjoint. 
 \end{enumerate}
 In the implemented algorithm, the move size threshold which allows for the exceptional violation of the \emph{feasibility criterion} (set to $2$ in the paper), is not fixed but it can be modified in the configuration file \texttt{config.yml}. In this way the influence of this parameter on the solution quality could be tested and optimized.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=6cm]{double-bridge}
+	\caption{A non sequential \emph{double bridge} move with $k=4$}
+	\label{fig:doublebridge}
+\end{figure}
 
 \begin{figure}[h]
 	\centering
@@ -68,16 +69,16 @@ In the implemented algorithm, the move size threshold which allows for the excep
 
 \subsection{Stopping criterion}
 The algorithm uses the same stopping criterion suggested in the original paper. In particular, when the algorithm finds a feasible tour with a move of size $k$, it checks whether the total gain is the best seen so far. If it is then it is the best improvement seen and it saves the current solution, and tries to improve further with a $k+1$-move. If this does not improve the solution the algorithm returns the solution it saved. On the other hand, if the size $k$ move yields a feasible tour which is not the best seen so far, the algorithm stops, since it knows there is a better move, with size smaller than $k$, that produces a better tour.\\
-It's worth to say that this is not the only possible criterion to stop the search. Other more patient and less greedy strategies could be used.
+By accepting only improving solutions, the algorithm is guaranteed to eventually stop, since it cannot loop over the same local optima.
 
 \subsection{Tour structure}
-A tour is maintained as a vector $v$ of pairs, where $v_i$ gives a pair with the two vertices which precedes and follows $i$ in the current tour. To this purpose every vertices (point) of the instance is numbered from $0$ to $N-1$ and its number is used as index to access the tour structure. Creation of such structure takes time $O(N)$ from a list of vertices where $N$ is the problem size. This allows constant time checks and retrieval of the two edges to break.
+A tour is maintained as a vector $v$ of pairs, where $v_i$ gives a pair with the two vertices which precedes and follows $i$ in the current tour. To this purpose every vertices (point) of the instance is numbered from $0$ to $N-1$ and its number is used as index to access the tour structure. Creation of such structure takes time $O(N)$ from a list of vertices where $N$ is the problem size. This allows constant time checks and retrieval of the two edges to break. Moreover, the distance between each vertex (the cost of each edge) is kept in a $N\times N$ sized matrix.
 
 \subsection{Neighbourhood function}
 \label{ssec:neighbourhood}
 In a local search algorithm the neighbourhood function describes which solutions are explored at every step. In this case every neighbour is generated with a $k$-move from the initial solution and the algorithm tries to increase $k$ at each step.\\
-In the described algorithm, for a given $i$, a step-move consists in breaking an edge of the tour $x_i$ and replacing it with  and edge $y_i$ chosen with the criteria described in \cref{chap:heuris}. Each step-move generates a new neighbour.
-If we fix the vertex $t_{2i-1}$ belonging to joined edge $y_{i-1}$, there are exactly two edges that can be broken. That's because the \emph{sequential exchange criterion} requires that $x_i$ must share an endpoint with $y_{i-1}$ and this endpoint is exactly $t_{2i-1}$. Additionally, by the \emph{feasibility criterion}, there is only one choice of $x_i$ that will produce a feasible tour, while breaking the other will inevitably split the graph into two connected components. \\
+In the described algorithm, for a given $i$, a step consists in breaking an edge of the tour $x_i$ and replacing it with  and edge $y_i$ chosen with the criteria described in \cref{chap:heuris}. Every step generates a new neighbour.
+If we fix the vertex $t_{2i-1}$ belonging to joined edge $y_{i-1}$, there are exactly two edges that can be broken. That's because the \emph{sequential exchange criterion} requires that $x_i$ must share an endpoint with $y_{i-1}$ and this endpoint is exactly $t_{2i-1}$. Additionally, by the \emph{feasibility criterion}, there is only one choice of $x_i$ that will produce a feasible tour, while breaking the other will inevitably split the graph into two connected components (as seen in \cref{fig:feasibility-moves}). \\
 Starting from vertex $t_{2i-1}$ the algorithm analyses the two possibilities giving the precedence to the edge with higher cost, since is the best one to remove. Only if the feasibility criterion is violated the procedure will try to remove the other edge.\\
 In order to choose an edge $y_i$, the algorithm finds all possible edges starting in $t_{2i}$ which are
 \begin{itemize}
@@ -117,22 +118,22 @@ A max-heap data structure is used in order to efficiently replace the worst (i.e
 Instead of considering just the top-S solutions to do the intersection, the original paper proposed to keep the intersection of all tours from the beginning. During some early tests this seemed to worsen the results with respect to the runs without intensification, so this change was made, and a small reduction of running time has been registered, since the algorithm excludes some choices from its neighbourhood.
 In choosing the parameter $S$ it is important to keep in mind that intensification is done only after $S$ local optima are found, so one should ensure that this number is suitable for the problem dimension, since a very large number with a small problem would probably be ineffective.
 
-\subsubsection{Recognizing duplicate solutions}
+\subsubsection{Avoiding duplicate solutions}
 \label{sssec:checkout}
-The authors of the algorithm stated that 30\% to 50\% of running time could be saved by keeping track of previous local optima and stopping the algorithm if the current local optima is the same seen before. This is justified by the fact that if the algorithm couldn't improve this solution before, it's unlikely it can do it now. While this sounds reasonable, in the proposed implementation no particular speed-up was registered. This may be due to hardware differences in computing power, considering that the algorithm was devised in 1973.\\
+The authors of the algorithm stated that 30\% to 50\% of running time could be saved by keeping track of previous local optima and stopping the algorithm if the current local optima is the same seen before. This is justified by the fact that if the algorithm couldn't improve this solution before, it's unlikely it can do it now. While this sounds reasonable, in the proposed implementation no particular speed-up was registered. In part, this may be due to different computing capabilities, considering that the algorithm was devised in 1973.\\
 Since trying to improve a previously found local optima will likely fail, the proposed algorithm adopts a slightly different strategy in this eventuality: instead of stopping, it restarts from a different starting edge and proceeds normally until it finds a different solution, or it determines no better tour exists. While this does not guarantee an improvement in running time, it makes the algorithm redirect the search in a different direction, which is probably more useful that exploring the neighbourhood of a previous solution.\\
 To do this, an \texttt{std::set} data structure is used, which maintains a sorted collection (ordered by tour cost) of all the feasible tours found at each iteration. This container guarantees logarithmic insertion and search operations.\\
 As a possible improvement to this strategy, one could keep track of the edges modified while converging to the previously encountered solution, and make sure that at least some of these are not added again, which can potentially lead to the same solution again, or to a very similar one.
 
 \clearpage
 \subsection{Random restart}
-The described heuristic is run from a randomized initial solution, like the one in \cref{fig:randomtour}. Using an initial solution generated with a fast constructive heuristic has been tried, and a faster convergence has been registered, even though the produced solution was often not better than the solution generated from a random initial solution.
-Despite this, the starting tour has a significant impact on the heuristic performance, since it determines the edges that will be tried for the first move. As can be seen by the calibration tests in the next section, the algorithm often does not explore more than the first two candidates to be joined. This explains why the initial tour greatly contributes to the final result.\\
-By restarting the heuristic many times on the same instances of the synthetic dataset, on average, the heuristic will produce tours 0.5\% from the optimal one, but the best solution found during a reasonable number of restarts is usually much closer to the optimal one. This strategy has been implemented in the file \texttt{utilities.cpp}, where the procedure \texttt{iterated\_LK} is defined for this purpose. Setting the desired number of restarts in the \texttt{config.yml} configuration file (parameter \texttt{LK\_iterations}) will restart the algorithm the specified number of times, and the final result will be the best solution found.
+The described heuristic is run from a randomized initial solution, like the one in \cref{fig:randomtour}. This simple strategy allows the algorithm to escape local optima and differentiate the provided solutions. Using an initial solution generated with a fast constructive heuristic has been tried, and a faster convergence has been registered, even though the produced solution was often not better than the solution generated from a random initial solution.
+Despite this, the starting tour has a significant impact on the heuristic performance, since it determines the edges that will be tried for the first move. Indeed the algorithm often does not explore more than the first two-three candidates to be joined. This explains why the initial tour greatly contributes to the final result.\\
+By restarting the heuristic many times on the same instances of the synthetic dataset of size $> 90$, on average, the heuristic will produce tours 0.5\% from the optimal one, but the best solution found during a reasonable number of restarts is usually much closer to the optimal one. This strategy has been implemented in the file \texttt{utilities.cpp}, where the procedure \texttt{runILK} is defined for this purpose. Setting the desired number of restarts in the \texttt{config.yml} configuration file (parameter \texttt{LK\_iterations}) will restart the algorithm the specified number of times, and the final result will be the best solution found.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=10cm]{path_50_random}
+	\includegraphics[width=12cm]{path_50_random}
 	\caption{Random initial path on a problem with 50 points}
 	\label{fig:randomtour}
 \end{figure}
