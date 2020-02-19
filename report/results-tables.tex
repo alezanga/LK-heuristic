@@ -80,6 +80,23 @@
 
 
 \begin{table}[H]
+	\caption{Test results on size 90}
+	\label{tab:t90}
+	\centering
+	\begin{tabular}[t]{c|cccc|cccc}
+		\rowcolor[HTML]{EFEFEF}
+		& \multicolumn{4}{c|}{\textbf{Percentage relative error}} & \multicolumn{4}{c}{\textbf{Execution time}} \\
+		\rowcolor[HTML]{EFEFEF}
+		\textbf{Restarts} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} & \textbf{Mean} &\textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		5        & 0.308			 & 0.344  & 0   & 0.880  & 0.794 		  & \num{0.965e-1} & 0.661 & 0.959 \\
+		15       & \num{0.880e-1}    & 0.176  & 0   & 0.440  & \num{0.231e+1} & 0.127 		   & \num{0.214e+1} & \num{0.259e+1} \\
+		30       & \num{0.880e-1}    & 0.176  & 0   & 0.440  & \num{0.453e+1} & 0.172          & \num{0.419e+1} & \num{0.485e+1}
+	\end{tabular}
+\end{table}
+
+
+
+\begin{table}[H]
 	\caption{Test results on size 100}
 	\label{tab:t100}
 	\centering
@@ -111,22 +128,22 @@
 \end{table}
 
 \begin{table}[H]
-	\caption{Execution times for exact method}
+	\caption{Test execution times of the exact method over 5 runs}
 	\label{tab:cplextime}
 	\centering
-	\begin{tabular}[t]{cc}
+	\begin{tabular}[t]{ccccc}
 		\rowcolor[HTML]{EFEFEF}
-		\textbf{Problem size} & \textbf{Execution time (s)} \\
-		10        & \num{0.294e-1}    \\
-		20       & 0.151 \\
-		30       & 0.466 \\ 
-		40       & \num{0.194e1} \\
-		50       & \num{0.350e1} \\
-		60       & \num{0.579e1} \\
-		70       & \num{0.515e2} \\
-		80       & \num{0.649e2} \\
-		90       & \num{0.968e2} \\
-		100      & \num{0.697e3} \\
-		110      & \num{0.404e3} \\
+		\textbf{Problem size} & \textbf{Mean time (s)} & \textbf{Std. dev} & \textbf{Min} & \textbf{Max} \\
+		10        & \num{0.220e-1} & \num{0.150e-1} & \num{0.556e-2} & \num{0.466e-1}   \\
+		20       & 0.248 & \num{0.404e-1} & \num{0.188} &\num{0.306} \\
+		30       & \num{0.118e+1} & \num{0.145} & \num{0.969} &\num{0.138e+1}  \\ 
+		40       & \num{0.225e1}& \num{0.126e+1} & \num{0.114e1} & \num{0.466e1} \\
+		50       & \num{0.973e1} & \num{0.677e+1} & \num{0.301e1} &\num{0.208e2} \\
+		60       & \num{0.103e2} & \num{0.412e+1} &\num{0.432e1} & \num{0.149e2} \\
+		70       & \num{0.252e2} & \num{0.164e+2} &\num{0.507e1} &\num{0.542e2} \\
+		80       & \num{0.594e2} & \num{0.472e+2} &\num{0.202e2} &\num{0.133e3}\\
+		90       & \num{0.148e3} & \num{0.129e3} & \num{0.319e2} &\num{0.400e3}\\
+		100      & \num{0.165e3} & \num{0.587e2} & \num{0.669e+2} &\num{0.249e3}\\
+		110      & \num{0.222e3} & \num{0.517e2} & \num{0.130e+3} & \num{0.280e3}\\
 	\end{tabular}
 \end{table}

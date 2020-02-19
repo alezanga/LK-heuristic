@@ -11,8 +11,6 @@ using std::pair;
 using std::set;
 using std::vector;
 
-// TOCHECK: intensification. keep track of common edges. Should work
-
 /**
  * Compute intersection of all set in good_edges. Then replace good_edges.second
  * with the new intersection.
@@ -97,14 +95,19 @@ LK::LK(const Params& p, unsigned int N, const double* C, set<Tour>& vt,
   if (P.max_neighbours == 0) P.max_neighbours = N - 3;
 }
 
+/**
+ * Checks whether edge (a,b) is broken
+ */
 bool LK::broken(const vector<vertex>& L, const vertex& a, const vertex& b) {
-  // TOCHECK: L.size() - 1 not a problem since size >= 2 when this is called
   for (unsigned int i = 0; i < L.size() - 1; i += 2)
     if (((L[i] == a) && (L[i + 1] == b)) || ((L[i] == b) && (L[i + 1] == a)))
       return true;
   return false;
 }
 
+/**
+ * Checks whether edge (a,b) is joined
+ */
 bool LK::joined(const vector<vertex>& L, const vertex& a, const vertex& b) {
   for (unsigned int i = 1; i < L.size() - 1; i += 2)
     if (((L[i] == a) && (L[i + 1] == b)) || ((L[i] == b) && (L[i + 1] == a)))
@@ -215,7 +218,6 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
       N, {std::numeric_limits<double>::lowest(), -1});
 
   // For all possible vertices
-  // TOCHECK: previoulsy was cycling on tour. Should not be a problem
   for (vertex n = 0; n < N; ++n) {
     // Gain by adding edge (t2i, n)
     double gi = gain - C[t2i * N + n];
@@ -224,7 +226,6 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
     vector<vertex> ar_t2i = tour.around(t2i, C);
     if (n != ar_t2i[0] && n != ar_t2i[1] && n != t2i && n != t1 &&
         !joined(L, t2i, n) && gi > 0) {
-      // TOCHECK: I removed !X (!broken) because n is not around t2i so it
       // cannot have been removed.
       // Consider adding edge yi = (t_2i, t_2i + 1) =
       // (t2i, n) Whole point of this subsequent part is ranking the
@@ -242,7 +243,6 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
             !std::binary_search(good_edges.second.cbegin(),
                                 good_edges.second.cend(), Pair(n, succ_n));
         if (succ_n != t1 && !broken(L, n, succ_n) && removable) {
-          // TOCHECK: removed (Y.empty() || !Y[n * N + succ_n]) since no edge
           // belonging to the tour can be added
           // Compute potential gain of removing x_i+1 and adding y_i
           double delta_g = C[n * N + succ_n] - C[t2i * N + n];
@@ -268,6 +268,9 @@ vector<vertex> LK::neighbourhood(const vertex& t1, const vertex& t2i,
   return ord_neighbours;
 }
 
+/**
+ * Choose which edge to break next
+ */
 bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
                  vector<vertex>& L, const unsigned int i) {
   vector<vertex> around_lasty = tour.around(lasty, C);
@@ -286,8 +289,6 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
         !std::binary_search(good_edges.second.cbegin(),
                             good_edges.second.cend(), Pair(lasty, t2i));
     if (t2i != t1 && !broken(L, lasty, t2i) && removable) {
-      // TOCHECK: removed !Y[lasty * N + t2i]
-
       // Remove edge (lasty, t2i)
       L.push_back(t2i);
 
@@ -362,6 +363,9 @@ bool LK::chooseX(Tour& tour, const vertex& t1, const vertex& lasty, double gain,
   return improvedx;
 }
 
+/**
+ * Choose which edge to join next
+ */
 bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
                  vector<vertex>& L, const unsigned int i) {
   vector<vertex> neighbours_ordered =
@@ -385,9 +389,10 @@ bool LK::chooseY(Tour& tour, const vertex& t1, const vertex& lastx, double gain,
   return false;
 }
 
+/**
+ * Retrieve final solution
+ */
 const TSPsolution LK::getSolution() const {
-  // TODO: maybe I can avoid passing both string and vector. I could also
-  // use python to plit the string
   Tour final_tour = *current_it;
   return TSPsolution(final_tour.getObjVal(), N, vector<double>(),
                      vector<std::string>(), final_tour.toString(),

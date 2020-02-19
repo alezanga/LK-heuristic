@@ -17,7 +17,7 @@ The parameters were set with the following values:
 Parameter \texttt{backtracking\_threshold} and \texttt{intens\_n\_tours} were set to a compromise between the best values found during calibration, and \texttt{intens\_min\_depth} was set to 5, since this value seemed to work best with size 90. Finally \texttt{max\_neighbours} was set to 5 because it resulted in a lower average error in both calibrations.
 
 \subsection{Tests on synthetic dataset}
-For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value were computed for both execution times and relative percentage error with respect to the optimal value. Tables \ref{tab:t10} - \ref{tab:t110} contains the results for some problems. Figure \ref{fig:path110} shows the heuristic solution for the bigger problem. Plots in figures \ref{fig:ploterr} and \ref{fig:plotime} summarise the results for tests with 15 restarts. In addition figure \ref{fig:logtime} compares the execution times of the two methods. Here the heuristic time is the arithmetic mean of the 10 executions with 15 restarts. Finally, \cref{tab:cplextime} lists the execution times for the exact method, which was run once for every instance.
+For each problem size to test, one instance was generated, and the heuristic was run on it first with 5 random restarts, then with 15 and 30. It was run 10 times for each different parameter, and the mean, standard deviation, minimum and maximum value were computed for both execution times and relative percentage error with respect to the optimal value. Tables \ref{tab:t10} - \ref{tab:t110} contains the results for some problems. Figure \ref{fig:path110} shows the heuristic solution for the bigger problem. Plots in figures \ref{fig:ploterr} and \ref{fig:plotime} summarise the results for tests with 15 restarts. In addition figure \ref{fig:logtime} compares the execution times of the two methods. Here the heuristic time is the arithmetic mean of the 10 executions with 15 restarts, while the exact method was run once for every problem. Finally, \cref{tab:cplextime} lists the average execution time of the exact method over 5 executions on different instances. Figure \ref{fig:timelinear} shows a comparison between the average execution times of the two methods (not scaled). 
 
 \input{results-tables}
 
@@ -45,12 +45,19 @@ For each problem size to test, one instance was generated, and the heuristic was
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=.9\textwidth]{logtime_plot}
-	\caption{Comparison of execution times for both methods (multiplied by 1000, logarithmic scale)}
+	\caption{Comparison of execution time of both methods ($\times$ 1000, logarithmic scale)}
 	\label{fig:logtime}
 \end{figure}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.9\textwidth]{timemeans}
+	\caption[Mean execution time of both methods]{Mean execution time of both algorithms. The heuristic average is computed with 15 restarts and 10 iterations on the same instance, while the CPLEX time is averaged over 5 iterations on different instances}
+	\label{fig:timelinear}
+\end{figure}
+
 \subsection{Tests on bigger instances}
-Table \ref{tab:tsplibr} lists the results of testing the heuristic method with some bigger instances taken from TSPLIB. Extensive tests would require much time, so these results come from a single execution of the heuristic with the same parameters used for previous tests, but with 30 restarts instead of 15. For problem \texttt{d657} parameter \texttt{backtracking\_threshold} was lowered to 2 to reduce running time.  The produced solution paths are shown in figures \ref{fig:p198}, \ref{fig:p493} and \ref{fig:p657}.
+Table \ref{tab:tsplibr} lists the results of testing the heuristic method with some bigger instances taken from TSPLIB. Extensive tests would require much time, so these results come from a single execution of the heuristic with the same parameters used for previous tests, but with 30 restarts instead of 15. For problem \texttt{d657} parameter \texttt{backtracking\_threshold} was lowered to 2 to reduce execution time. The produced solution paths are shown in figures \ref{fig:p198}, \ref{fig:p493} and \ref{fig:p657}.
 
 \begin{table}[h]
 	\caption{Results on TSPLIB problems}

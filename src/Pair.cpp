@@ -15,7 +15,3 @@ const vertex& Pair::v() const { return p.second; }
 bool Pair::operator==(const Pair& o) const { return p == o.p; }
 
 bool Pair::operator<(const Pair& o) const { return p < o.p; }
-
-// std::size_t Pair::Hash::operator()(const Pair& e) const {
-//   return std::hash<vertex>()(e.u()) ^ std::hash<vertex>()(e.v());
-// }

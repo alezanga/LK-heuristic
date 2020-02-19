@@ -5,8 +5,9 @@
 \label{chap:introduction}
 
 \subsection{Description of the problem}
-The task of the exercise was to develop two algorithms capable of solving the TSP problem, specialized to the domain of drilling holes in electric panels. Given a sequence of holes to be drilled in an electric panel, the algorithms should be used to find a sequence of holes that minimizes the cost of drilling the whole panel, where the costs are given by the euclidean distances between holes. For simplicity it is assumed that the cost of drilling every hole can be ignored.\\ 
-The first algorithm implements an exact methods using the IBM CPLEX optimization suite. The second algorithm is an approximated heuristic, inspired to the Lin-Kernighan algorithm \cite{LinK73}. Both algorithms have been tested on synthetic instances produced taking into account the applicative domain. The two algorithms are described in the following pages, and tests and results are listed in the last sections.
+The task of the exercise was to develop two algorithms capable of solving the Travelling Salesman Problem (TSP), specialized to the domain of drilling holes in electric panels. Given a sequence of holes to be drilled in an electric panel, the algorithms should be used to find a sequence of holes that minimizes the cost of drilling the whole panel, where the costs are given by the euclidean distances between holes. For simplicity it is assumed that the cost of drilling every hole can be ignored.\\ 
+The first algorithm implements an exact methods using the IBM CPLEX optimization suite. The second algorithm is an approximated heuristic, inspired by the Lin-Kernighan algorithm \cite{LinK73}. Some implementation details has been taken from \cite{ImplemLK}. \\
+Both algorithms have been tested on synthetic instances produced taking into account the applicative domain. The two algorithms are described in the following pages, and tests and results are reported in the last sections.
 
 \subsection{Description of provided material}
 %\minitoc
@@ -15,18 +16,18 @@ The provided archive comes with the following structure:
 \renewcommand*\DTstylecomment{\rmfamily\color{blue}\textit}
 \dirtree{%
 	.1 /.
-	.2 bin/\DTcomment{Binary file folder}.
-	.2 build/\DTcomment{Folder for build file}.
-	.2 files/.
+	.2 bin/\DTcomment{Binary files folder}.
+	.2 build/\DTcomment{Build files folder}.
+	.2 files/\DTcomment{Logs folder}.
 	.2 instances/\DTcomment{Contains csv files to load}.
 	.2 plots/.
 	.2 src/.
-	.3 utils/\DTcomment{Utilities}.
+	.3 utils/.
 	.4 cpxmacro.hpp.
 	.4 params.hpp.
-	.4 python\_adapter.hpp.
-	.4 variadic\_table.hpp.
-	.4 yaml\_parser.hpp.
+	.4 python\_adapter.hpp\DTcomment{Wrapper class for Python embedding}.
+	.4 variadic\_table.hpp\DTcomment{Library to print tables}.
+	.4 yaml\_parser.hpp\DTcomment{Parser for the configuration file}.
 	.3 calibrate.cpp\DTcomment{Calibration script}.
 	.3 config.yml.
 	.3 CPLEX.cpp.
@@ -36,7 +37,7 @@ The provided archive comes with the following structure:
 	.3 main.cpp\DTcomment{Program main}.
 	.3 Pair.cpp.
 	.3 Pair.hpp.
-	.3 plot\_script.py.
+	.3 plot\_script.py\DTcomment{Script to plot with Python}.
 	.3 test.cpp\DTcomment{Test script}.
 	.3 Tour.cpp.
 	.3 Tour.hpp.
@@ -78,7 +79,7 @@ The specifics of the machine used for development, calibration and test of the p
 \section{Dataset generation}
 \label{sec:datasetgen}
 In order to test the two algorithms, a procedure to build a synthetic dataset of different sizes has been provided.\\ 
-The procedure to generate the TSP instances receives as an input a number $N$ of points (which symbolises holes) and generates $N$ pairs representing the coordinates in space of the points on a $N\times N$ square canvas. These points are distributed in a way to resemble the regularity usually found in the disposition of holes in electric panel.\\ 
+The procedure to generate the TSP instances receives as an input a number $N$ of points (which symbolises holes) and generates $N$ pairs representing the coordinates in space of the points on a $N\times N$ square canvas. These points are distributed in a way to resemble the regularity usually found in the disposition of holes in electric panels.\\ 
 To do this the procedure draws some regular polygons with up to $10$ sides. Each polygon is generated independently and may overlap with the others, creating not perfectly regular shapes, but neither a completely random point distribution. An example of such an instance is shown in \cref{fig:dataexample}. All this operations, as well as the function to load already generated instances from \texttt{csv} files, are implemented in \texttt{TSPinstance.cpp}.
 
 \begin{figure}[h]

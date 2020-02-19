@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 def plotTimes(opt_times, heur_times, title, filename):

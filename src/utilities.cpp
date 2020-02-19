@@ -88,6 +88,7 @@ Tour utils::createTour(vector<vertex> atour, const double* C,
 }
 
 /**
+ * Runs LK heuristic with restarts
  * @param P hyper-parameters obejct
  * @param N number of vertices
  * @param C cost matrix
@@ -121,6 +122,14 @@ pair<TSPsolution, double> utils::runILK(const Params& P, const unsigned int N,
   return {best, tot_seconds};
 }
 
+/**
+ * Runs CPLEX exact method
+ * @param P hyper-parameters obejct
+ * @param N number of vertices
+ * @param costs cost matrix
+ * @param log_cplex stream where to log results
+ * @return pair with solution object and total execution time
+ */
 pair<TSPsolution, double> utils::runOptimal(const Params& P,
                                             const unsigned int N,
                                             const double* costs,

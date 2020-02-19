@@ -15,10 +15,6 @@ struct Pair {
   Pair(const vertex& = -1, const vertex& = -1);
   bool operator==(const Pair&) const;
   bool operator<(const Pair&) const;
-
-  // struct Hash {
-  //   std::size_t operator()(const Pair&) const;
-  // };
 };
 
 #endif /* PAIRTYPE_H */

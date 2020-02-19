@@ -3,7 +3,7 @@
 solve_cplex: true
 solve_heur: true
 # Instances to read and solve (must be on single line)
-instances_to_read: [tsp_50, tsp_60]
+instances_to_read: [tsp_20, tsp_50]
 
 # Instance generation parameters
 # If generate_instances = false the others are ignored

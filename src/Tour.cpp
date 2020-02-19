@@ -57,19 +57,8 @@ pair<bool, Tour> Tour::generate(const Tour& tour, const vector<vertex>& L,
   // Copy the current tour
   vector<Pair> tour_copy(tour.tour);
 
-  // vector<int> visited(N, 2);
-
   // Start to generate new tour
   disconnect(tour_copy, L, 0);
-
-  // TOCHECK: this check to see if it's a tour (and maybe can avoid some
-  // passage)
-
-  // Check if it's a tour: all N vertices must be visited exactly 2 times
-  // SHOUlD BE DONE IN SUBSEQUENT CHECK
-  // if (tour_copy.size() != N) return {false, vector<Pair>()};
-  // for (const int& v : visited)
-  //   if (v != 2) return {false, vector<Pair>()};
 
   std::unordered_set<vertex> encountered;
   vertex n = 0, pred = -1;
@@ -158,17 +147,3 @@ bool Tour::operator<(const Tour& t) const {
   // Costs are the same, so lexicographic compare of vector is used
   return tour < t.tour;
 }
-
-// Tour::Iterator::Iterator(vector<Pair>::iterator p) : ptr(p) {}
-// bool Tour::Iterator::operator!=(const Iterator& o) const {
-//   return ptr != o.ptr;
-// }
-// // Prefix (++it)
-// Tour::Iterator Tour::Iterator::operator++() {
-//   ++ptr;
-//   return *this;
-// }
-// const Pair& Tour::Iterator::operator*() const { return *ptr; }
-
-// Tour::Iterator Tour::begin() { return Tour::Iterator(Pairs.begin()); };
-// Tour::Iterator Tour::end() { return Tour::Iterator(Pairs.end()); };

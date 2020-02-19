@@ -2,13 +2,13 @@
 % !TeX root = memoco-report.tex
 \section{Conclusions}
 \label{sec:conclusion}
-The implemented heuristic can be expected to find very good (if not optimal) solutions for problem of small size and outperforms the exact algorithm in every conducted test. For problem of size greater than 40 the gap in running time between the two algorithms becomes very large, several minutes for the exact method and a few seconds for the heuristic that will likely find the optimal solution anyway.\\
-Tests on TSPLIB drilling problems suggests encouraging performances on non trivial sizes, even though the runtime grows, and some parameters may be adjusted to favour execution time at the expense of solution quality.
+The implemented heuristic can be expected to find very good (if not optimal) solutions for problem of small size and outperforms the exact algorithm in every conducted test. For problem of size greater than 80 the gap in execution time between the two algorithms becomes very large, 1 minute on average for the exact method and a few seconds for the heuristic that will likely find the optimal solution anyway.\\
+Tests on TSPLIB drilling problems suggests encouraging performances on non trivial problems, even though the runtime grows, and some parameters may be adjusted to favour execution time at the expense of solution quality.
 For the optimization of the drilling paths over electric boards, the heuristic method seems the preferable choice even for small boards, since it often finds the optimal solution with a reasonable number of restarts. \\
-Performance on instances with thousands of holes remains to be tested. Literature suggests that by refining this algorithm some more, good results could be achieved.
+Performance on instances with thousands of holes remains to be tested. Literature suggests that by refining this algorithm further, good results could be achieved.
     
 \subsection{Possible improvements}
-The Lin-Keringhan local search algorithm received many reformulations, adaptations and improvements since its original publication that can be found in literature, so many of these ideas could be exploited to improve the hereby described algorithm.\\
+The Lin-Keringhan local search algorithm received many enhancements and adaptations since its original publication that can be found in literature, so many of these ideas could be exploited to improve the hereby described algorithm.\\
 A first improvement could relate to the tour representation, since there are better data structures to represent an Hamiltonian cycle. For example \cite{GLOVER1996223} proposed \textit{ejection chains}, structures that would allow for a fast (constant time) lookup when deciding if breaking a new edge allows a feasible tour or not. This would improve the efficiency and efficacy of the neighbourhood function and thus of the entire algorithm. \\
 Another possible improvement was suggested in \cite{LinK73}. In the original implementation of the Lin-Kernighan local search, once a local optima was found, some effort was done to improve the solution further, by applying some non sequential exchanges, like the one shown in \cref{fig:doublebridge}. It was reported that this methods considerably improved the solutions in some cases, while in other situations it provided little benefit.\\
 Moreover, some refinements could be applied in case a duplicate solution is encountered, as already suggested in \cref{sssec:checkout}, and the intensification strategy could be refined by using a probabilistic approach to give some more flexibility.\\

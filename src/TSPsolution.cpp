@@ -21,8 +21,9 @@ ostream& operator<<(ostream& out, const TSPsolution& sol) {
   if (sol.improving_iterations_lk)
     out << "Improving iterations: " << sol.improving_iterations_lk << "\n";
   if (!sol.stour.empty()) out << "Tour: " << sol.stour << "\n";
-  // if (sol.varVals && sol.nameMap) {
-  //   for (int i = 0; i < sol.asize; ++i)
+  // NOTE: Decomment this to see variale assignment in cplex log file
+  // if (!(sol.varVals.empty() && sol.nameMap.empty())) {
+  //   for (unsigned int i = 0; i < sol.varVals.size(); ++i)
   //     out << sol.nameMap[i] << " : " << sol.varVals[i] << "\n";
   // }
   return out << std::endl;

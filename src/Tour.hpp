@@ -21,11 +21,6 @@ class Tour {
                          unsigned int);
 
  public:
-  // class Hash {
-  //   static void hash_combine(std::size_t& seed, const vertex& v);
-  //   std::size_t operator()(std::vector<Pair> const&) const;
-  // };
-
   Tour(unsigned int, const std::vector<Pair>& = std::vector<Pair>(),
        const double = 0.0);
 

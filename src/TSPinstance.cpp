@@ -48,7 +48,6 @@ void TSPinstance::randomPolygon(unsigned int n_sides, unsigned int h,
 
 /**
  * Generate a random number of poligons using exactly N vertices
- * Note: works for N >= 6
  * @param N number of vertices
  */
 void TSPinstance::generateRandomPolygons(unsigned int N) {
@@ -134,6 +133,9 @@ double* TSPinstance::costMatrix() const {
   return C;
 }
 
+/**
+ * Save instance to csv
+ */
 void TSPinstance::saveToCsv(const string& filepath) {
   std::ofstream file;
   file.open(filepath + ".csv", std::fstream::out);
@@ -143,6 +145,9 @@ void TSPinstance::saveToCsv(const string& filepath) {
   file.close();
 }
 
+/**
+ * Load instance from csv
+ */
 unsigned int TSPinstance::loadFromCsv(const string& filepath) {
   std::ifstream file;
   file.open(filepath, std::fstream::in);
